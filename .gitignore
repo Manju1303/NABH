@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.env
+
+# Data files (local storage)
+nabh_data.json
+nabh_deadlines.json
+
+# Node.js
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+*.log
+.vercel
