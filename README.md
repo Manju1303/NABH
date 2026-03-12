@@ -1,26 +1,24 @@
 # NABH Hospital Dashboard
 
-A hospital dashboard that collects NABH (National Accreditation Board for Hospitals & Healthcare Providers) Entry Level data, validates it, predicts accreditation readiness, and stores structured data reliably. This hybrid architecture utilizes a deterministic rule-based compliance engine combined with an optional machine-learning analytics module.
+A hospital dashboard that collects NABH (National Accreditation Board for Hospitals & Healthcare Providers) Entry Level data, validates it, predicts accreditation readiness, and stores structured data reliably. This system utilizes a deterministic rule-based compliance engine and features extensive security hardening.
 
 ## Core Features
-1. **Hospital Portal Interface**: Web-based forms for structured data collection (infrastructure, clinical services, HR, infection control, etc.), including file uploads (PDF, images).
-2. **Data Validation Engine**: Ensures logical correctness (e.g., occupancy rates, numeric limits) and rejects incorrect entries prior to scoring.
+1. **Hospital Portal Interface**: Web-based forms for structured data collection (infrastructure, clinical services, HR, infection control, etc.).
+2. **Data Validation & Sanitization**: Ensures logical correctness, protects against XSS/injections with robust input sanitization, and strict CORS policies.
 3. **NABH Compliance Scoring Engine (Rule-based)**: Computes a compliance percentage by weighting metrics against standardized NABH entry-level criteria.
-4. **Data Storage & Analytics**:
-   - Stores granular and structured inputs in a PostgreSQL database (Supabase).
-   - Syncs aggregated/summarized records to Google Sheets via API for reporting.
-5. **Machine Learning Readiness Prediction**: (Optional) Analyzes historical data and patterns to probabilistically estimate accreditation outcomes (e.g., using Random Forest).
-6. **Admin Analytics Panel**: Visualizes aggregated system metrics, typical compliance gaps, and cohort trends.
+4. **Deficiency Tracking Engine**: Flags hospitals falling below NABH minimum standards, assigning severity levels to non-compliance areas.
+5. **Remediation Management**: Sets remediation deadlines with dynamic blinking UI alerts for approaching or overdue dates.
+6. **Robust Security**: Rate limiting, strict CORS, and comprehensive security headers to protect sensitive hospital data.
+7. **Data Export & Storage**: 
+   - Stores granular and structured inputs.
+   - Hospital-wise CSV exports with 80+ data points.
+   - Persistent JSON data storage.
 
 ## Proposed Tech Stack Architecture
-- **Frontend Dashboard**: React / Next.js / Streamlit (Hosted on Vercel or Netlify)
-- **Backend API Server**: Python FastAPI or Flask (Hosted on Render or Railway)
-- **Database & Authentication**: Supabase (PostgreSQL, Auth, and basic triggers)
-- **Document & File Storage**: Supabase Storage or Cloudinary
-- **External Data Reporting**: Google Sheets API
-- **Data Analytics & ML module**: Pandas, Scikit-learn (Embedded in the Python Backend)
+- **Frontend Dashboard**: React / Next.js / Tailwind CSS / Framer Motion
+- **Backend API Server**: Python FastAPI
+- **Storage**: Persistent JSON-based storage + CSV exports
 
 ## Project Initialization
-- `frontend/` - Contains the React/Next.js/HTML dashboard.
-- `backend/` - Contains the FastAPI/Flask backend server and ML training code.
-- `database/` - Supabase migrations and schema definitions.
+- `frontend/` - Contains the Next.js frontend dashboard and compliance UI.
+- `backend/` - Contains the FastAPI backend server, scoring logic, and validation schemas.
