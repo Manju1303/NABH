@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, User, ArrowRight, ActivitySquare } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -11,55 +10,71 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
+    if (email === 'admin@nabh.com' && password === 'nabh2026') {
       router.push('/dashboard');
+    } else if (!email || !password) {
+      setError('Please enter email and password.');
     } else {
-      setError('Please enter valid credentials.');
+      setError('Invalid credentials. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-[#0A0F1C]">
-      {/* Background */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-
-      <div className="z-10 w-full max-w-md glass-card p-10 rounded-2xl border border-slate-800 shadow-2xl relative bg-slate-900/40 backdrop-blur-xl">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-4 border border-indigo-500/30">
-            <ActivitySquare className="w-8 h-8 text-indigo-400 animate-pulse" />
+    <div className="min-h-screen flex flex-col" style={{ background: '#F5F7FA' }}>
+      {/* HOPE-style Header */}
+      <header className="hope-header px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">H</div>
+          <div>
+            <h1 className="text-lg font-semibold tracking-wide">HOPE</h1>
+            <p className="text-[11px] text-white/80 -mt-0.5">Healthcare Organisation Platform for Entry Level Certification</p>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome Back</h2>
-          <p className="text-slate-400 text-sm">Sign in to your NABH dashboard</p>
         </div>
+      </header>
 
-        {error && <div className="bg-red-950/50 border border-red-500/50 text-red-200 p-3 rounded-xl text-sm mb-6 flex items-center justify-center transition-all">{error}</div>}
+      {/* Login Form */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="hope-card p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#E8F5E9' }}>
+                <svg className="w-8 h-8" fill="none" stroke="#00695C" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0-1.1.9-2 2-2h2a2 2 0 012 2v1m-6 0V9a4 4 0 118 0v2m-8 0h8m-8 0H7a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2h-1" /></svg>
+              </div>
+              <h2 className="text-xl font-semibold" style={{ color: '#00695C' }}>Sign In to Portal</h2>
+              <p className="text-sm mt-1" style={{ color: '#9E9E9E' }}>Enter your credentials to access the dashboard</p>
+            </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block ml-1 uppercase tracking-wider">Email Address</label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600/70 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono" placeholder="admin@hospital.com" />
+            {error && (
+              <div className="mb-4 p-3 rounded text-sm text-white font-medium" style={{ background: '#C62828' }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="hope-label">Email Address</label>
+                <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                  className="hope-input" placeholder="admin@nabh.com" />
+              </div>
+              <div>
+                <label className="hope-label">Password</label>
+                <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                  className="hope-input" placeholder="••••••••" />
+              </div>
+              <button type="submit" className="hope-btn-primary w-full py-3 text-base mt-2">
+                Sign In
+              </button>
+            </form>
+
+            <div className="mt-6 text-center text-xs" style={{ color: '#9E9E9E' }}>
+              Default: admin@nabh.com / nabh2026
             </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block ml-1 uppercase tracking-wider">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
-              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600/70 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono tracking-widest" placeholder="••••••••" />
-            </div>
-          </div>
 
-          <div className="flex justify-end pt-1">
-            <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">Forgot password?</a>
-          </div>
-
-          <button type="submit" className="w-full group flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] mt-6">
-            Sign In
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </form>
+          <p className="text-center text-xs mt-4" style={{ color: '#9E9E9E' }}>
+            © 2026 Healthcare Organisation Platform. All rights reserved.
+          </p>
+        </div>
       </div>
     </div>
   );

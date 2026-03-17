@@ -330,129 +330,111 @@ export default function ComplianceForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <header className="border-b border-slate-800 pb-4">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 mb-1">Hospital Onboarding</h1>
-        <p className="text-slate-500 text-sm">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
-      </header>
-
-      {/* Progress */}
-      <div className="grid grid-cols-6 lg:grid-cols-12 gap-1">
-        {STEPS.map((s, i) => (
-          <button key={i} onClick={() => { if (i <= step) setStep(i); }}
-            className={`py-2 rounded-lg text-[10px] font-semibold transition-all cursor-pointer flex flex-col items-center gap-1
-              ${i < step ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                i === step ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40' :
-                'bg-slate-900/50 text-slate-600 border border-slate-800'}`}>
-            {i < step ? <CheckCircle className="w-3 h-3" /> : s.icon}
-            <span className="hidden lg:inline">{s.label}</span>
-            <span className="lg:hidden">{i + 1}</span>
-          </button>
-        ))}
+    <div className="max-w-5xl mx-auto">
+      {/* Breadcrumb */}
+      <div className="hope-breadcrumb mb-3">
+        <a href="/dashboard">Home</a> / <span style={{ color: '#424242' }}>Hospital Onboarding</span>
       </div>
 
-      {error && <div className="bg-red-950/50 border border-red-500/50 text-red-200 p-3 rounded-xl flex items-start gap-2 text-sm"><AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><p>{error}</p></div>}
+      {/* Blue info banner */}
+      <div className="hope-banner flex items-center justify-between mb-4">
+        <span>Hospital Onboarding Form — Step {step + 1} of {STEPS.length}</span>
+        <span className="text-xs opacity-80">{STEPS[step].label}</span>
+      </div>
 
+      {error && (
+        <div className="mb-4 p-3 rounded text-sm text-white font-medium flex items-center gap-2" style={{ background: '#C62828' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Score Result */}
       {result && (
-        <div className={`p-6 rounded-2xl glass-card flex flex-col md:flex-row items-center gap-6 border ${result.is_ready ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-amber-500/50 bg-amber-950/20'}`}>
-          <div className="flex-1 space-y-2">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              {result.is_ready ? <CheckCircle className="text-emerald-400" /> : <ShieldAlert className="text-amber-400" />}
-              {result.is_ready ? 'Hospital is Accreditation Ready!' : 'Actions Required'}
-            </h2>
-            <p className="text-slate-300">Score: <span className="font-mono text-lg">{result.total_score}/{result.max_score}</span></p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-3">
-              {Object.entries(result.section_scores).map(([k, v]) => (
-                <div key={k} className="bg-slate-900/50 rounded-lg p-2 text-center">
-                  <p className="text-[10px] text-slate-500 capitalize">{k.replace(/_/g, ' ')}</p>
-                  <p className="text-sm font-bold text-indigo-300">{v}</p>
-                </div>
-              ))}
+        <div className="hope-card p-5 mb-4">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: result.is_ready ? '#2E7D32' : '#F57F17' }}>
+                {result.is_ready ? '✅' : '⚠️'} {result.is_ready ? 'Hospital is Accreditation Ready!' : 'Actions Required — See Deficiencies Below'}
+              </h2>
+              <p className="text-sm mt-1" style={{ color: '#616161' }}>
+                Score: <strong>{result.total_score}/{result.max_score}</strong> ({Math.round(result.readiness_percentage)}%)
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {Object.entries(result.section_scores).map(([k, v]) => (
+                  <span key={k} className="px-2 py-1 rounded text-xs font-medium" style={{ background: '#F5F7FA', color: '#424242', border: '1px solid #E0E0E0' }}>
+                    {k.replace(/_/g, ' ')}: <strong style={{ color: '#00695C' }}>{v}%</strong>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="shrink-0 relative w-28 h-28 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full -rotate-90">
-              <circle cx="56" cy="56" r="52" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
-              <circle cx="56" cy="56" r="52" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={327} strokeDashoffset={327 - (327 * result.readiness_percentage) / 100} className={`transition-all duration-1000 ${result.is_ready ? 'text-emerald-500' : 'text-amber-500'}`} strokeLinecap="round" />
-            </svg>
-            <span className="text-xl font-bold relative z-10">{Math.round(result.readiness_percentage)}%</span>
+            <div className="shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-xl font-bold" style={{ background: result.is_ready ? '#E8F5E9' : '#FFF8E1', color: result.is_ready ? '#2E7D32' : '#F57F17', border: `3px solid ${result.is_ready ? '#2E7D32' : '#F57F17'}` }}>
+              {Math.round(result.readiness_percentage)}%
+            </div>
           </div>
         </div>
       )}
 
       {/* Deficiency Report */}
       {deficiencies.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-red-400 flex items-center gap-2">
-              <Bell className="w-5 h-5 animate-pulse" /> Deficiency Report
-            </h2>
+        <div className="hope-card p-5 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold" style={{ color: '#C62828' }}>🔔 Deficiency Report</h3>
             {defSummary && (
               <div className="flex gap-2 text-xs">
-                {defSummary.critical > 0 && <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded-full border border-red-500/30 animate-pulse">🔴 {defSummary.critical} Critical</span>}
-                {defSummary.high > 0 && <span className="px-2 py-1 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30">🟠 {defSummary.high} High</span>}
-                {defSummary.medium > 0 && <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">🔵 {defSummary.medium} Medium</span>}
+                {defSummary.critical > 0 && <span className="px-2 py-1 rounded font-medium" style={{ background: '#FFEBEE', color: '#C62828' }}>🔴 {defSummary.critical} Critical</span>}
+                {defSummary.high > 0 && <span className="px-2 py-1 rounded font-medium" style={{ background: '#FFF3E0', color: '#E65100' }}>🟠 {defSummary.high} High</span>}
+                {defSummary.medium > 0 && <span className="px-2 py-1 rounded font-medium" style={{ background: '#E3F2FD', color: '#1565C0' }}>🔵 {defSummary.medium} Medium</span>}
               </div>
             )}
           </div>
-
-          {deficiencies.map(def => (
-            <div key={def.id} className={`glass-card p-4 border transition-all ${
-              def.severity === 'critical' ? 'border-red-500/40 bg-red-950/10' :
-              def.severity === 'high' ? 'border-amber-500/40 bg-amber-950/10' :
-              'border-blue-500/40 bg-blue-950/10'
-            }`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                      def.severity === 'critical' ? 'bg-red-500/20 text-red-400 animate-pulse' :
-                      def.severity === 'high' ? 'bg-amber-500/20 text-amber-400' :
-                      'bg-blue-500/20 text-blue-400'
-                    }`}>{def.severity}</span>
-                    <span className="text-xs text-slate-500">{def.category}</span>
+          <div className="space-y-3">
+            {deficiencies.map(def => (
+              <div key={def.id} className="p-3 rounded border text-sm" style={{
+                background: def.severity === 'critical' ? '#FFF5F5' : def.severity === 'high' ? '#FFFBF0' : '#F5F9FF',
+                borderColor: def.severity === 'critical' ? '#FFCDD2' : def.severity === 'high' ? '#FFE0B2' : '#BBDEFB',
+              }}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold uppercase px-1.5 py-0.5 rounded mr-2" style={{
+                      background: def.severity === 'critical' ? '#C62828' : def.severity === 'high' ? '#E65100' : '#1565C0',
+                      color: 'white'
+                    }}>{def.severity}</span>
+                    <span className="text-xs" style={{ color: '#9E9E9E' }}>{def.category}</span>
+                    <p className="font-medium mt-1" style={{ color: '#212121' }}>{def.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#616161' }}>{def.message}</p>
                   </div>
-                  <h4 className="text-sm font-medium text-white">{def.label}</h4>
-                  <p className="text-xs text-slate-400 mt-1">{def.message}</p>
-                  <p className="text-[10px] text-slate-600 mt-1">Ref: {def.nabh_reference}</p>
+                  <span className="text-xs shrink-0" style={{ color: '#9E9E9E' }}>{def.suggested_deadline_days}d fix</span>
                 </div>
-                <div className="shrink-0 text-right">
-                  <Clock className="w-4 h-4 text-slate-500 inline" />
-                  <p className="text-[10px] text-slate-500">{def.suggested_deadline_days} day fix</p>
-                </div>
+                {submittedId && !deadlineSet[def.id] ? (
+                  <div className="mt-2 pt-2 flex flex-col sm:flex-row gap-2" style={{ borderTop: '1px solid #E0E0E0' }}>
+                    <input type="date" value={deadlineInputs[def.id] || ''} onChange={e => setDeadlineInputs(p => ({...p, [def.id]: e.target.value}))} min={new Date().toISOString().split('T')[0]} className="hope-input text-xs" style={{ maxWidth: 160 }} />
+                    <input type="text" placeholder="Note (optional)" value={deadlineNotes[def.id] || ''} onChange={e => setDeadlineNotes(p => ({...p, [def.id]: e.target.value}))} className="hope-input text-xs flex-1" />
+                    <button onClick={() => handleSetDeadline(def.id, def.label)} disabled={!deadlineInputs[def.id]} className="hope-btn-primary text-xs px-3 py-1.5 disabled:opacity-40">Set Deadline</button>
+                  </div>
+                ) : deadlineSet[def.id] ? (
+                  <div className="mt-2 pt-2 text-xs font-medium flex items-center gap-1" style={{ borderTop: '1px solid #E0E0E0', color: '#2E7D32' }}>✅ Deadline set for {deadlineInputs[def.id]}</div>
+                ) : null}
               </div>
-
-              {/* Deadline setter */}
-              {submittedId && !deadlineSet[def.id] ? (
-                <div className="mt-3 pt-3 border-t border-slate-800/50 flex flex-col sm:flex-row gap-2">
-                  <div className="flex-1 flex gap-2">
-                    <input type="date" value={deadlineInputs[def.id] || ''}
-                      onChange={e => setDeadlineInputs(p => ({...p, [def.id]: e.target.value}))}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                    <input type="text" placeholder="Note (optional)" value={deadlineNotes[def.id] || ''}
-                      onChange={e => setDeadlineNotes(p => ({...p, [def.id]: e.target.value}))}
-                      className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                  </div>
-                  <button onClick={() => handleSetDeadline(def.id, def.label)}
-                    disabled={!deadlineInputs[def.id]}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs rounded-lg transition-all disabled:opacity-30 cursor-pointer whitespace-nowrap">
-                    <CalendarClock className="w-3 h-3" /> Set Deadline
-                  </button>
-                </div>
-              ) : deadlineSet[def.id] ? (
-                <div className="mt-3 pt-3 border-t border-slate-800/50 flex items-center gap-2 text-xs text-emerald-400">
-                  <CheckCircle className="w-4 h-4" /> Deadline set for {deadlineInputs[def.id]}
-                </div>
-              ) : null}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
+      {/* HOPE-style Tabs */}
+      <div className="hope-tabs overflow-x-auto">
+        {STEPS.map((s, i) => (
+          <button key={i} onClick={() => { if (i <= step) setStep(i); }}
+            className={`hope-tab ${i === step ? 'active' : ''} ${i > step ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       {/* Form body */}
-      <div className="glass-card p-6 border border-slate-800">
-        <h3 className="text-lg font-semibold mb-5 text-indigo-200 border-b border-slate-800 pb-3 flex items-center gap-2">{STEPS[step].icon} {STEPS[step].label}</h3>
+      <div className="hope-card p-6">
+        <h3 className="text-base font-semibold mb-5 pb-3" style={{ color: '#00695C', borderBottom: '1px solid #E0E0E0' }}>
+          {STEPS[step].label}
+        </h3>
 
         {step === 0 && <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Inp label="Hospital Name *" v={hospitalName} set={setHospitalName} />
@@ -468,21 +450,21 @@ export default function ComplianceForm() {
             <Num label="Built-up Area (sq.mt)" v={builtUpArea} set={setBuiltUpArea} />
             <Num label="Number of Buildings" v={buildings} set={setBuildings} />
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider pt-2">Bed Strength</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Bed Strength</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Num label="Sanctioned Beds *" v={sanctionedBeds} set={setSanctionedBeds} />
             <Num label="Operational Beds *" v={operationalBeds} set={setOperationalBeds} />
             <Num label="Emergency Beds" v={emergencyBeds} set={setEmergencyBeds} />
             <Num label="ICU Beds" v={icuBeds} set={setIcuBeds} />
             <Num label="HDU Beds" v={hduBeds} set={setHduBeds} />
-            <Num label="Private Ward (Single)" v={privateBeds} set={setPrivateBeds} />
-            <Num label="Semi-Private (2 Beds)" v={semiPrivateBeds} set={setSemiPrivateBeds} />
-            <Num label="General Ward (3+)" v={generalBeds} set={setGeneralBeds} />
+            <Num label="Private Ward" v={privateBeds} set={setPrivateBeds} />
+            <Num label="Semi-Private" v={semiPrivateBeds} set={setSemiPrivateBeds} />
+            <Num label="General Ward" v={generalBeds} set={setGeneralBeds} />
           </div>
         </div>}
 
         {step === 2 && <div className="space-y-5">
-          <p className="text-xs text-slate-500 bg-slate-900/50 p-3 rounded-lg">Note: Take data of the past 3 months for monthly averages.</p>
+          <p className="text-xs p-3 rounded" style={{ background: '#FFF8E1', color: '#F57F17', border: '1px solid #FFE082' }}>Note: Take data of the past 3 months for monthly averages.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Num label="OPD Patients (past 12 months) *" v={opd12} set={setOpd12} />
             <Num label="Admissions (past 12 months) *" v={admissions12} set={setAdmissions12} />
@@ -503,20 +485,16 @@ export default function ComplianceForm() {
           <Num label="Joint Replacements (last 1 year)" v={jointReplacements} set={setJointReplacements} />
         </div>}
 
-        {step === 4 && <div className="space-y-6">
+        {step === 4 && <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Tog label="Nurses Present at Hospital?" c={nursesPresent} set={setNursesPresent} />
             {nursesPresent ? (
-              <Tog label="Upload Nurses Document (Evidence)" c={nursesDoc} set={setNursesDoc} />
+              <Tog label="Nurse Document Uploaded (Evidence)" c={nursesDoc} set={setNursesDoc} />
             ) : (
               <Sel label="Insource or Outsource Nurses?" v={nursesOutsourced} set={setNursesOutsourced} opts={['','Insourced','Outsourced']} labels={['Select','Insourced','Outsourced']} />
             )}
           </div>
-          {nursesDoc && (
-            <div className="bg-indigo-950/30 p-4 border border-indigo-500/30 rounded-xl text-sm text-indigo-300">
-              <span className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-emerald-500" /> Nurse document uploaded successfully.</span>
-            </div>
-          )}
+          {nursesDoc && <div className="p-3 rounded text-sm font-medium" style={{ background: '#E8F5E9', color: '#2E7D32', border: '1px solid #A5D6A7' }}>✅ Nurse document uploaded successfully.</div>}
         </div>}
 
         {step === 5 && <div className="space-y-5">
@@ -525,7 +503,7 @@ export default function ComplianceForm() {
             <Tog label="Super-Speciality Surgeries?" c={superSpeciality} set={setSuperSpeciality} />
             {superSpeciality && <><Tog label="Exclusive OT for Super-Speciality?" c={exclusiveOT} set={setExclusiveOT} /><Num label="Number of Super-Speciality OTs" v={numSuperOTs} set={setNumSuperOTs} /></>}
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Sterilization Methods</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Sterilization Methods</h4>
           <div className="grid grid-cols-2 gap-3">
             <Tog label="Steam Autoclave" c={steamAutoclave} set={setSteamAutoclave} />
             <Tog label="ETO" c={eto} set={setEto} />
@@ -536,21 +514,21 @@ export default function ComplianceForm() {
         </div>}
 
         {step === 6 && <div className="space-y-5">
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Electrical</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Electrical</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Tog label="UPS Present?" c={upsPresent} set={setUpsPresent} />
             {upsPresent && <Num label="UPS Capacity (KV)" v={upsKV} set={setUpsKV} />}
             <Tog label="Generator Present?" c={genPresent} set={setGenPresent} />
             {genPresent && <Num label="Generator Capacity (KV)" v={genKV} set={setGenKV} />}
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Water Supply</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Water Supply</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Num label="Total Water Tanks" v={waterTanks} set={setWaterTanks} />
             <Num label="Total Capacity (in 1000 litres)" v={waterCapacity} set={setWaterCapacity} />
             <Tog label="Alternate Water Source?" c={altWater} set={setAltWater} />
             {altWater && <Sel label="Alternate Usage" v={altWaterUsage} set={setAltWaterUsage} opts={['','Drinking','Not for drinking']} labels={['Select','Drinking','Not for drinking']} />}
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Elevators & Transport</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Elevators & Transport</h4>
           <div className="grid grid-cols-2 gap-4">
             <Num label="Elevators for Trolleys/Beds" v={trolleyElevators} set={setTrolleyElevators} />
             <Num label="Elevators for People" v={peopleElevators} set={setPeopleElevators} />
@@ -560,7 +538,7 @@ export default function ComplianceForm() {
         </div>}
 
         {step === 7 && <div className="space-y-5">
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Infection Control</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Infection Control</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Infection Control Committee *" c={icCommittee} set={setIcCommittee} />
             <Tog label="Nurses Trained in IC *" c={nursesIC} set={setNursesIC} />
@@ -568,7 +546,7 @@ export default function ComplianceForm() {
             <Tog label="Housekeeping Checklists Maintained" c={housekeeping} set={setHousekeeping} />
             <Tog label="Laundry Segregation Process" c={laundryProcess} set={setLaundryProcess} />
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Bio-Medical Waste</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Bio-Medical Waste</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="BMW Authorization from PCB *" c={bmwAuth} set={setBmwAuth} />
             <Tog label="Colour Coded Bins Available *" c={colorBins} set={setColorBins} />
@@ -581,7 +559,7 @@ export default function ComplianceForm() {
         </div>}
 
         {step === 8 && <div className="space-y-5">
-          <p className="text-xs text-slate-500 bg-slate-900/50 p-3 rounded-lg">Select all training programs that have been conducted at your hospital.</p>
+          <p className="text-xs p-3 rounded" style={{ background: '#E3F2FD', color: '#1565C0', border: '1px solid #90CAF9' }}>Select all training programs that have been conducted at your hospital.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Scope of Services" c={trScope} set={setTrScope} />
             <Tog label="Safe Practices in Laboratory *" c={trLab} set={setTrLab} />
@@ -596,13 +574,13 @@ export default function ComplianceForm() {
             <Tog label="Disciplinary Procedures" c={trDisciplinary} set={setTrDisciplinary} />
             <Tog label="Grievance Handling" c={trGrievance} set={setTrGrievance} />
           </div>
-          <div className="bg-slate-900/50 p-3 rounded-lg text-xs text-slate-400">
-            Completed: <span className="text-indigo-400 font-bold">{[trScope,trLab,trImaging,trChild,trIC,trFire,trSpill,trSafety,trNeedle,trMedError,trDisciplinary,trGrievance].filter(Boolean).length}</span> / 12 training modules
+          <div className="p-3 rounded text-xs" style={{ background: '#F5F7FA', color: '#616161' }}>
+            Completed: <strong style={{ color: '#00695C' }}>{[trScope,trLab,trImaging,trChild,trIC,trFire,trSpill,trSafety,trNeedle,trMedError,trDisciplinary,trGrievance].filter(Boolean).length}</strong> / 12 training modules
           </div>
         </div>}
 
         {step === 9 && <div className="space-y-5">
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Documentation & Patient Rights</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Documentation & Patient Rights</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Standard Consent Forms Used" c={consentForms} set={setConsentForms} />
             <Tog label="Medical Records Audited Monthly" c={recordsAudited} set={setRecordsAudited} />
@@ -612,7 +590,7 @@ export default function ComplianceForm() {
             <Tog label="LASA Drugs Storage Protocol" c={lasaProtocol} set={setLasaProtocol} />
             <Tog label="Medication Labelling Protocol" c={medLabelling} set={setMedLabelling} />
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Safety & Signage</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Safety & Signage</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Fire NOC Valid *" c={fireNoc} set={setFireNoc} />
             <Tog label="Regular Fire Drills *" c={fireDrills} set={setFireDrills} />
@@ -625,7 +603,7 @@ export default function ComplianceForm() {
             <Tog label="Directional Signage" c={directionalSignage} set={setDirectionalSignage} />
             <Tog label="Departmental Signage" c={deptSignage} set={setDeptSignage} />
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Maintenance</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Maintenance</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Sel label="Breakdown Maintenance" v={breakdownMaint} set={setBreakdownMaint} opts={['In house','Outsourced']} labels={['In house','Outsourced']} />
             <Sel label="Preventive Maintenance" v={preventiveMaint} set={setPreventiveMaint} opts={['In house','Outsourced']} labels={['In house','Outsourced']} />
@@ -633,19 +611,19 @@ export default function ComplianceForm() {
         </div>}
 
         {step === 10 && <div className="space-y-5">
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Laboratory</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Laboratory</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Critical Result Reporting Register" c={labCritical} set={setLabCritical} />
             <Tog label="TAT Displayed" c={labTAT} set={setLabTAT} />
             <Tog label="Scope of Laboratory Documented" c={labScope} set={setLabScope} />
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Imaging</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Imaging</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Critical Result Reporting Register" c={imgCritical} set={setImgCritical} />
             <Tog label="TAT Displayed" c={imgTAT} set={setImgTAT} />
             <Tog label="Scope of Imaging Documented" c={imgScope} set={setImgScope} />
           </div>
-          <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Blood Bank</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Blood Bank</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Transfusion Reaction Forms (past 3 months)" c={bloodReaction} set={setBloodReaction} />
             <Tog label="Blood Transfusion Committee Active" c={bloodCommittee} set={setBloodCommittee} />
@@ -666,20 +644,20 @@ export default function ComplianceForm() {
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-2 pb-10">
+      <div className="flex items-center justify-between py-5">
         <button onClick={() => { if (step > 0) setStep(step - 1); }} disabled={step === 0}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed">
-          <ChevronLeft className="w-4 h-4" /> Previous
+          className="hope-btn-outline flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
+          ← Previous
         </button>
         {step < STEPS.length - 1 ? (
           <button onClick={() => { if (validateStep()) setStep(step + 1); }}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-2.5 rounded-full font-semibold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] cursor-pointer">
-            Next <ChevronRight className="w-4 h-4" />
+            className="hope-btn-primary flex items-center gap-2">
+            Next →
           </button>
         ) : (
           <button onClick={handleSubmit} disabled={loading}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-7 py-2.5 rounded-full font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer disabled:opacity-40">
-            {loading ? <><span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span> Analyzing...</> : <><Send className="w-4 h-4" /> Complete &amp; Analyze</>}
+            className="flex items-center gap-2 px-6 py-2 rounded text-sm font-medium text-white disabled:opacity-40" style={{ background: '#2E7D32' }}>
+            {loading ? <><span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span> Analyzing...</> : <>✓ Complete & Analyze</>}
           </button>
         )}
       </div>
@@ -687,19 +665,26 @@ export default function ComplianceForm() {
   );
 }
 
-// ─── Compact reusable components ───
+// ─── HOPE-styled reusable components ───
 function Inp({ label, v, set, type = 'text', ph = '' }: { label: string; v: string; set: (s: string) => void; type?: string; ph?: string }) {
-  return <div><label className="text-xs font-medium text-slate-400 mb-1 block">{label}</label><input type={type} value={v} onChange={e => set(e.target.value)} placeholder={ph} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" /></div>;
+  return <div><label className="hope-label">{label}</label><input type={type} value={v} onChange={e => set(e.target.value)} placeholder={ph} className="hope-input" /></div>;
 }
 function Num({ label, v, set }: { label: string; v: number; set: (n: number) => void }) {
-  return <div><label className="text-xs font-medium text-slate-400 mb-1 block">{label}</label><input type="number" value={v} onChange={e => set(Number(e.target.value))} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" /></div>;
+  return <div><label className="hope-label">{label}</label><input type="number" value={v} onChange={e => set(Number(e.target.value))} className="hope-input" /></div>;
 }
 function Sel({ label, v, set, opts, labels }: { label: string; v: string; set: (s: string) => void; opts: string[]; labels: string[] }) {
-  return <div><label className="text-xs font-medium text-slate-400 mb-1 block">{label}</label><select value={v} onChange={e => set(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-all">{opts.map((o, i) => <option key={o} value={o}>{labels[i]}</option>)}</select></div>;
+  return <div><label className="hope-label">{label}</label><select value={v} onChange={e => set(e.target.value)} className="hope-select">{opts.map((o, i) => <option key={o} value={o}>{labels[i]}</option>)}</select></div>;
 }
 function Tog({ label, c, set }: { label: string; c: boolean; set: (b: boolean) => void }) {
-  return <label className="flex items-center gap-3 cursor-pointer group py-0.5"><button type="button" onClick={() => set(!c)} className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${c ? 'bg-indigo-500' : 'bg-slate-700'}`}><span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${c ? 'translate-x-5' : ''}`} /></button><span className="text-slate-300 group-hover:text-white transition-colors select-none text-sm">{label}</span></label>;
+  return (
+    <label className="flex items-center gap-3 cursor-pointer py-1">
+      <button type="button" onClick={() => set(!c)} className={`hope-toggle ${c ? 'on' : ''}`}>
+        <span className="knob" />
+      </button>
+      <span className="text-sm" style={{ color: '#424242' }}>{label}</span>
+    </label>
+  );
 }
 function ListInput({ label, items, setItems, updateList, required }: { label: string; items: string[]; setItems: (l: string[]) => void; updateList: (l: string[], i: number, v: string, s: (l: string[]) => void) => void; required: number }) {
-  return <div><label className="text-xs font-medium text-slate-400 mb-2 block">{label}</label><div className="grid grid-cols-1 md:grid-cols-2 gap-2">{items.map((item, i) => <div key={i} className="flex items-center gap-2"><span className="text-xs text-slate-600 w-5 shrink-0">{i + 1}.</span><input value={item} onChange={e => updateList(items, i, e.target.value, setItems)} placeholder={i < required ? 'Required *' : 'Optional'} className={`flex-1 bg-slate-900 border rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${i < required ? 'border-slate-600' : 'border-slate-800'}`} /></div>)}</div></div>;
+  return <div><label className="hope-label mb-2">{label}</label><div className="grid grid-cols-1 md:grid-cols-2 gap-2">{items.map((item, i) => <div key={i} className="flex items-center gap-2"><span className="text-xs w-5 shrink-0" style={{ color: '#9E9E9E' }}>{i + 1}.</span><input value={item} onChange={e => updateList(items, i, e.target.value, setItems)} placeholder={i < required ? 'Required *' : 'Optional'} className="hope-input text-sm" /></div>)}</div></div>;
 }

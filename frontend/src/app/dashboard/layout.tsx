@@ -1,6 +1,5 @@
 'use client';
 
-import { Activity, LayoutDashboard, Database, LogOut, BookOpen, ClipboardList, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -8,55 +7,81 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   const links = [
-    { href: '/dashboard', label: 'Onboarding', icon: <ClipboardList className="w-5 h-5" /> },
-    { href: '/dashboard/standards', label: 'Standards', icon: <BookOpen className="w-5 h-5" /> },
-    { href: '/dashboard/documents', label: 'Documents', icon: <FileText className="w-5 h-5" /> },
-    { href: '/dashboard/analytics', label: 'Analytics', icon: <Activity className="w-5 h-5" /> },
-    { href: '/dashboard/data', label: 'Database Logs', icon: <Database className="w-5 h-5" /> },
-    { href: '/login', label: 'Logout', icon: <LogOut className="w-5 h-5" /> },
+    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { href: '/dashboard/standards', label: 'Standards', icon: '📘' },
+    { href: '/dashboard/documents', label: 'Documents', icon: '📄' },
+    { href: '/dashboard/analytics', label: 'Analytics', icon: '📈' },
+    { href: '/dashboard/data', label: 'Database Logs', icon: '💾' },
   ];
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-slate-950 text-slate-100">
-      
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 glass-card border-none md:border-r border-slate-800 p-6 flex flex-col md:h-screen sticky top-0 md:rounded-none rounded-b-3xl z-40">
-        <div className="flex items-center gap-3 text-indigo-400 font-bold text-2xl mb-12 animate-pulse-glow">
-          <Activity className="w-8 h-8" />
-          <span>Aura NABH</span>
+    <div className="flex flex-col min-h-screen">
+      {/* HOPE-style Top Header */}
+      <header className="hope-header px-6 py-2.5 flex items-center justify-between z-50">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-base">H</div>
+          <div>
+            <h1 className="text-base font-semibold tracking-wide">HOPE</h1>
+            <p className="text-[10px] text-white/70 -mt-0.5">Healthcare Organisation Platform for Entry Level Certification</p>
+          </div>
         </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-white/80 hidden sm:inline">Admin Portal</span>
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">A</div>
+          <Link href="/login" className="text-xs text-white/70 hover:text-white transition-colors" title="Logout">
+            Logout
+          </Link>
+        </div>
+      </header>
 
-        <nav className="flex-1 space-y-4 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 scrollbar-hide">
+      <div className="flex flex-1">
+        {/* HOPE-style Sidebar */}
+        <aside className="hope-sidebar w-56 hidden md:flex flex-col shrink-0">
+          <nav className="flex-1 py-4">
+            {links.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center gap-3 px-5 py-3 text-sm transition-all border-l-3 ${
+                    isActive
+                      ? 'active bg-white/5 text-white border-l-[3px]'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent'
+                  }`}
+                  style={isActive ? { borderLeftColor: '#26A69A' } : {}}
+                >
+                  <span className="text-base">{link.icon}</span>
+                  <span className="font-medium">{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="p-4 mx-3 mb-3 rounded text-xs text-center" style={{ background: 'rgba(255,255,255,0.05)', color: '#78909C' }}>
+            Version 2.0.0
+          </div>
+        </aside>
+
+        {/* Mobile nav */}
+        <div className="md:hidden flex overflow-x-auto border-b" style={{ background: '#263238', borderColor: '#37474F' }}>
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
-              <Link 
-                key={link.href} 
-                href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${
-                  isActive 
-                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                }`}
-              >
-                {link.icon}
-                <span className="font-medium">{link.label}</span>
+              <Link key={link.href} href={link.href}
+                className={`flex items-center gap-2 px-4 py-3 text-xs whitespace-nowrap ${isActive ? 'text-white' : 'text-gray-400'}`}
+                style={isActive ? { borderBottom: '2px solid #26A69A' } : {}}>
+                <span>{link.icon}</span> {link.label}
               </Link>
             );
           })}
-        </nav>
-
-        <div className="mt-8 p-4 bg-slate-900/50 rounded-2xl border border-slate-800/50 text-xs text-slate-500 text-center">
-          Admin Portal <br /> Version 2.0.0
         </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 p-6 lg:p-12 relative overflow-y-auto w-full h-full pb-20 md:pb-6">
-        {/* Subtle mesh behind content */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-        {children}
-      </main>
+        {/* Main Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto" style={{ background: '#F5F7FA' }}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

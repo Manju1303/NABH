@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({ subsets: ["latin"] });
+const roboto = Roboto({ subsets: ["latin"], weight: ["300", "400", "500", "700"] });
 
 export const metadata: Metadata = {
-  title: "Aura NABH | AI-Powered Hospital Accreditation Dashboard",
-  description: "Seamlessly collect, validate, and predict NABH entry-level readiness using deterministic rules and ML.",
+  title: "HOPE NABH | Healthcare Organisation Platform for Entry Level Certification",
+  description: "Hospital accreditation compliance platform for NABH Entry Level Certification.",
 };
 
 export default function RootLayout({
@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" style={{colorScheme: 'dark'}}>
-      <body className={`${outfit.className} bg-gradient-mesh text-slate-100 min-h-screen antialiased`}>
+    <html lang="en">
+      <body className={`${roboto.className} min-h-screen antialiased`} style={{ background: '#F5F7FA', color: '#212121' }}>
         {children}
       </body>
     </html>

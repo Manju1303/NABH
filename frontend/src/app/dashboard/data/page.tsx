@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '@/lib/api';
-import { Database, Trash2, RefreshCw, Download, HardDrive, FileJson } from 'lucide-react';
 
 interface DataRecord {
   id: number;
@@ -37,111 +36,77 @@ export default function DataPage() {
     try {
       await axios.delete(`${API_BASE_URL}/api/submissions/${id}`);
       setRecords(prev => prev.filter(r => r.id !== id));
-    } catch {
-      alert('Failed to delete record.');
-    }
+    } catch { alert('Failed to delete record.'); }
   };
 
   const handleExportCSV = () => {
     if (records.length === 0) return;
-    // Download the fully flattened CSV from the backend (all hospital fields + scores)
     window.open(`${API_BASE_URL}/api/export-csv`, '_blank');
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      
-      <header className="border-b border-slate-800 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 mb-2">
-            Database Logs
-          </h1>
-          <p className="text-slate-400 font-light">All hospital submission records stored locally.</p>
-        </div>
-        <div className="flex gap-3">
-          <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all text-sm cursor-pointer">
-            <RefreshCw className="w-4 h-4" /> Refresh
-          </button>
-          <button onClick={handleExportCSV} disabled={records.length === 0} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 transition-all text-sm disabled:opacity-40 cursor-pointer">
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
-        </div>
-      </header>
+    <div className="max-w-6xl mx-auto">
+      <div className="hope-breadcrumb mb-3"><a href="/dashboard">Home</a> / <span style={{ color: '#424242' }}>Database Logs</span></div>
 
-      {/* Storage info */}
-      <div className="glass-card p-5 border border-slate-800 flex items-center gap-4 text-sm">
-        <div className="p-3 bg-slate-900 rounded-xl">
-          <HardDrive className="w-5 h-5 text-cyan-400" />
-        </div>
-        <div className="flex-1">
-          <p className="text-slate-300 font-medium">Storage: <span className="font-mono text-cyan-400">backend/nabh_data.json</span></p>
-          <p className="text-slate-500 text-xs mt-0.5">Data persists on disk in JSON format. Survives server restarts. {records.length} record(s) stored.</p>
-        </div>
-        <div className="p-3 bg-slate-900 rounded-xl">
-          <FileJson className="w-5 h-5 text-slate-600" />
+      <div className="hope-banner flex items-center justify-between mb-4">
+        <span>Database Logs — All Submissions</span>
+        <div className="flex gap-2">
+          <button onClick={fetchData} className="px-3 py-1 text-xs rounded bg-white/20 hover:bg-white/30 transition-colors">↻ Refresh</button>
+          <button onClick={handleExportCSV} disabled={records.length === 0} className="px-3 py-1 text-xs rounded bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-40">⬇ Export CSV</button>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <span className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></span>
-        </div>
+        <div className="flex items-center justify-center h-48"><span className="animate-spin h-8 w-8 border-4 rounded-full" style={{ borderColor: '#00695C', borderTopColor: 'transparent' }}></span></div>
       ) : records.length === 0 ? (
-        <div className="glass-card p-12 text-center space-y-4 border border-slate-800">
-          <Database className="w-16 h-16 text-slate-600 mx-auto" />
-          <h2 className="text-2xl font-semibold text-slate-300">No Records Found</h2>
-          <p className="text-slate-500 max-w-md mx-auto">
-            Submit a hospital form from the <a href="/dashboard" className="text-indigo-400 underline hover:text-indigo-300">Compliance Form</a> page to populate this table.
-          </p>
+        <div className="hope-card p-12 text-center">
+          <p className="text-2xl mb-2">📋</p>
+          <h2 className="text-lg font-semibold" style={{ color: '#424242' }}>No Records Found</h2>
+          <p className="text-sm mt-1" style={{ color: '#9E9E9E' }}>Submit a hospital form from the <a href="/dashboard" style={{ color: '#0277BD' }}>Dashboard</a> to populate this table.</p>
         </div>
       ) : (
-        <div className="glass-card border border-slate-800 overflow-hidden">
+        <div className="hope-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase text-xs tracking-wider">
-                <tr>
-                  <th className="px-5 py-4">ID</th>
-                  <th className="px-5 py-4">Submitted</th>
-                  <th className="px-5 py-4">Hospital</th>
-                  <th className="px-5 py-4">Reg #</th>
-                  <th className="px-5 py-4">Beds</th>
-                  <th className="px-5 py-4">Score</th>
-                  <th className="px-5 py-4">Readiness</th>
-                  <th className="px-5 py-4">Status</th>
-                  <th className="px-5 py-4 text-center">Action</th>
+              <thead style={{ background: '#F5F7FA' }}>
+                <tr className="text-xs uppercase tracking-wider" style={{ color: '#616161' }}>
+                  <th className="px-5 py-3">ID</th>
+                  <th className="px-5 py-3">Submitted</th>
+                  <th className="px-5 py-3">Hospital</th>
+                  <th className="px-5 py-3">Reg #</th>
+                  <th className="px-5 py-3">Beds</th>
+                  <th className="px-5 py-3">Score</th>
+                  <th className="px-5 py-3">Readiness</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {records.map(rec => (
-                  <tr key={rec.id} className="border-t border-slate-800/50 hover:bg-slate-900/40 transition-colors">
-                    <td className="px-5 py-4 text-slate-500 font-mono">#{rec.id}</td>
-                    <td className="px-5 py-4 text-slate-400 text-xs whitespace-nowrap">{new Date(rec.submitted_at).toLocaleString()}</td>
-                    <td className="px-5 py-4 text-white font-medium">{rec.hospital_name}</td>
-                    <td className="px-5 py-4 text-slate-400 font-mono">{rec.registration_number}</td>
-                    <td className="px-5 py-4 text-slate-300">{rec.operational_beds}/{rec.total_sanctioned_beds}</td>
-                    <td className="px-5 py-4 text-slate-300 font-mono">{rec.score}/{rec.max_score}</td>
-                    <td className="px-5 py-4">
+                  <tr key={rec.id} className="hover:bg-gray-50 transition-colors" style={{ borderTop: '1px solid #E0E0E0' }}>
+                    <td className="px-5 py-3 font-mono text-xs" style={{ color: '#9E9E9E' }}>#{rec.id}</td>
+                    <td className="px-5 py-3 text-xs" style={{ color: '#616161' }}>{new Date(rec.submitted_at).toLocaleString()}</td>
+                    <td className="px-5 py-3 font-medium" style={{ color: '#212121' }}>{rec.hospital_name}</td>
+                    <td className="px-5 py-3 font-mono text-xs" style={{ color: '#616161' }}>{rec.registration_number}</td>
+                    <td className="px-5 py-3" style={{ color: '#424242' }}>{rec.operational_beds}/{rec.total_sanctioned_beds}</td>
+                    <td className="px-5 py-3 font-mono" style={{ color: '#424242' }}>{rec.score}/{rec.max_score}</td>
+                    <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-slate-800 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${rec.is_ready ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                            style={{ width: `${rec.readiness_percentage}%` }} />
+                        <div className="w-16 h-2 rounded-full overflow-hidden" style={{ background: '#E0E0E0' }}>
+                          <div className="h-full rounded-full" style={{ width: `${rec.readiness_percentage}%`, background: rec.is_ready ? '#2E7D32' : '#F57F17' }} />
                         </div>
-                        <span className="text-xs text-slate-400">{Math.round(rec.readiness_percentage)}%</span>
+                        <span className="text-xs" style={{ color: '#9E9E9E' }}>{Math.round(rec.readiness_percentage)}%</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3">
                       {rec.is_ready ? (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Ready</span>
+                        <span className="px-2.5 py-1 rounded text-xs font-medium" style={{ background: '#E8F5E9', color: '#2E7D32' }}>Ready</span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">Not Ready</span>
+                        <span className="px-2.5 py-1 rounded text-xs font-medium" style={{ background: '#FFF8E1', color: '#F57F17' }}>Not Ready</span>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-center">
-                      <button onClick={() => handleDelete(rec.id)}
-                        className="p-2 rounded-lg text-red-400 hover:bg-red-500/15 hover:text-red-300 transition-colors cursor-pointer"
-                        title="Delete record">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <td className="px-5 py-3 text-center">
+                      <button onClick={() => handleDelete(rec.id)} className="p-1.5 rounded hover:bg-red-50 transition-colors cursor-pointer" style={{ color: '#C62828' }} title="Delete">🗑️</button>
                     </td>
                   </tr>
                 ))}
