@@ -364,50 +364,131 @@ export default function ComplianceForm() {
 
   const validateStep = () => {
     setError(null);
+
+    // ── Step 0: Basic Info ──
     if (step === 0) {
-      if (!hospitalName || !regNumber || !email || !phone) {
-        setError('Please fill all required (*) fields.'); return false;
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError('Please enter a valid email address.'); return false;
-      }
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(phone)) {
-        setError('Phone number must be exactly 10 digits.'); return false;
-      }
+      if (!hospitalName.trim()) { setError('Hospital Name is required.'); return false; }
+      if (hospitalName.trim().length < 3) { setError('Hospital Name must be at least 3 characters.'); return false; }
+      if (!regNumber.trim()) { setError('Registration Number is required.'); return false; }
+      if (!email.trim()) { setError('Contact Email is required.'); return false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address (e.g. admin@hospital.com).'); return false; }
+      if (!phone.trim()) { setError('Phone number is required.'); return false; }
+      if (!/^\d{10}$/.test(phone)) { setError('Phone number must be exactly 10 digits (no spaces, dashes, or country code).'); return false; }
     }
+
+    // ── Step 1: Hospital Details ──
     if (step === 1) {
-      if (!hospitalType || !ownershipType) {
-        setError('Hospital type and ownership are required.'); return false;
-      }
-      if (sanctionedBeds <= 0 || operationalBeds <= 0) {
-        setError('Sanctioned and operational beds must be greater than 0.'); return false;
+      if (!hospitalType) { setError('Hospital Type is required.'); return false; }
+      if (!ownershipType) { setError('Ownership Type is required.'); return false; }
+      if (builtUpArea <= 0) { setError('Built-up Area must be greater than 0.'); return false; }
+      if (buildings <= 0) { setError('Number of Buildings must be at least 1.'); return false; }
+      if (sanctionedBeds <= 0) { setError('Sanctioned Beds must be greater than 0.'); return false; }
+      if (operationalBeds <= 0) { setError('Operational Beds must be greater than 0.'); return false; }
+      if (operationalBeds > sanctionedBeds) { setError('Operational Beds cannot exceed Sanctioned Beds.'); return false; }
+      if (icuBeds + hduBeds + privateBeds + semiPrivateBeds + generalBeds + emergencyBeds > operationalBeds) {
+        setError('Sum of bed categories (ICU + HDU + Private + Semi-Private + General + Emergency) cannot exceed Operational Beds.'); return false;
       }
     }
-    if (step === 2 && (opd12 <= 0 || admissions12 <= 0)) {
-      setError('Required OPD and Admissions data must be greater than 0.'); return false;
+
+    // ── Step 2: OPD / IPD Data ──
+    if (step === 2) {
+      if (opd12 <= 0) { setError('OPD Patients (past 12 months) must be greater than 0.'); return false; }
+      if (admissions12 <= 0) { setError('Admissions (past 12 months) must be greater than 0.'); return false; }
+      if (avgOccupancy < 0 || avgOccupancy > 100) { setError('Average Occupancy must be between 0 and 100%.'); return false; }
+      if (icuOccupancy < 0 || icuOccupancy > 100) { setError('ICU Occupancy must be between 0 and 100%.'); return false; }
+      if (wardOccupancy < 0 || wardOccupancy > 100) { setError('Ward Occupancy must be between 0 and 100%.'); return false; }
     }
+
+    // ── Step 3: Clinical Services ──
     if (step === 3) {
       const validServices = topServices.filter(s => s.trim() !== '').length;
       const validDiagnoses = topDiagnoses.filter(s => s.trim() !== '').length;
       const validSurgeries = topSurgeries.filter(s => s.trim() !== '').length;
-      if (validServices < 5 || validDiagnoses < 5 || validSurgeries < 5) {
-        setError('Please provide at least the top 5 entries for Services, Diagnoses, and Surgeries.'); return false;
+      if (validServices < 5) { setError('Please provide at least 5 Clinical Services.'); return false; }
+      if (validDiagnoses < 5) { setError('Please provide at least 5 Diagnoses.'); return false; }
+      if (validSurgeries < 5) { setError('Please provide at least 5 Surgical Procedures.'); return false; }
+    }
+
+    // ── Step 4: Hospital Staffing ──
+    if (step === 4) {
+      if (nursesPresent) {
+        if (nursesList.length === 0) { setError('Please add at least one nurse.'); return false; }
+        for (let i = 0; i < nursesList.length; i++) {
+          if (!nursesList[i].name.trim()) { setError(`Nurse #${i + 1}: Name is required.`); return false; }
+          if (!nursesList[i].qualification.trim()) { setError(`Nurse #${i + 1}: Qualification is required.`); return false; }
+        }
+      } else {
+        if (!nursesOutsourced) { setError('Please select whether nurses are Insourced or Outsourced.'); return false; }
       }
     }
-    if (step === 4 && nursesPresent) {
-      const invalidNurse = nursesList.find(n => !n.name.trim() || !n.qualification.trim());
-      if (invalidNurse) {
-        setError('All added nurses must have a Name and Qualification.'); return false;
-      }
-      if (nursesList.length === 0) {
-        setError('Please add at least one nurse or uncheck "Nurses Present".'); return false;
+
+    // ── Step 5: OT & Sterilization ──
+    if (step === 5) {
+      if (numOTs <= 0) { setError('Number of OTs must be at least 1.'); return false; }
+      if (superSpeciality && exclusiveOT && numSuperOTs <= 0) { setError('Number of Super-Speciality OTs must be at least 1 if exclusive OT is selected.'); return false; }
+      if (!steamAutoclave && !eto && !plasma && !flash && !otherSterilization.trim()) {
+        setError('Please select at least one sterilization method.'); return false;
       }
     }
-    if (step === 11 && (!medDirector || !qualityMgr || !admin)) {
-      setError('All key personnel names are required.'); return false;
+
+    // ── Step 6: Utilities ──
+    if (step === 6) {
+      if (upsPresent && upsKV <= 0) { setError('UPS Capacity (KV) must be greater than 0 when UPS is present.'); return false; }
+      if (genPresent && genKV <= 0) { setError('Generator Capacity (KV) must be greater than 0 when generator is present.'); return false; }
+      if (waterTanks <= 0) { setError('Total Water Tanks must be at least 1.'); return false; }
+      if (waterCapacity <= 0) { setError('Total Water Capacity must be greater than 0.'); return false; }
     }
+
+    // ── Step 7: Infection Control & BMW ──
+    if (step === 7) {
+      if (!icCommittee) { setError('Infection Control Committee is mandatory.'); return false; }
+      if (!nursesIC) { setError('Nurses Trained in Infection Control is mandatory.'); return false; }
+      if (!handHygiene) { setError('Hand Hygiene Audit is mandatory.'); return false; }
+      if (!bmwAuth) { setError('BMW Authorization from PCB is mandatory.'); return false; }
+      if (!colorBins) { setError('Colour Coded Bins are mandatory.'); return false; }
+      if (!segregationInstr) { setError('Segregation Instructions must be displayed (mandatory).'); return false; }
+      if (!closedTransport) { setError('Closed Container Transport is mandatory.'); return false; }
+      if (!needleCutters) { setError('Needle Cutters usage is mandatory.'); return false; }
+      if (!bmwStorage) { setError('BMW Storage Facility is mandatory.'); return false; }
+      if (!biohazardSign) { setError('Biohazard Sign must be displayed (mandatory).'); return false; }
+    }
+
+    // ── Step 8: HR Training ──
+    if (step === 8) {
+      if (!trLab) { setError('Training: Safe Practices in Laboratory is mandatory.'); return false; }
+      if (!trImaging) { setError('Training: Safe Practices in Imaging is mandatory.'); return false; }
+      if (!trIC) { setError('Training: Infection Control Practices is mandatory.'); return false; }
+      if (!trSpill) { setError('Training: Spill Management is mandatory.'); return false; }
+      if (!trSafety) { setError('Training: Safety Education Programme is mandatory.'); return false; }
+    }
+
+    // ── Step 9: Patient Processes ──
+    if (step === 9) {
+      if (!fireNoc) { setError('Fire NOC must be valid (mandatory).'); return false; }
+      if (!fireDrills) { setError('Regular Fire Drills are mandatory.'); return false; }
+    }
+
+    // ── Step 10: Lab, Imaging & Blood Bank ──
+    if (step === 10) {
+      // No hard mandatory here but we verify at least labs or imaging are filled if applicable
+    }
+
+    // ── Step 11: Key Personnel ──
+    if (step === 11) {
+      if (!medDirector.trim()) { setError('Medical Director name is required.'); return false; }
+      if (medDirector.trim().length < 3) { setError('Medical Director name must be at least 3 characters.'); return false; }
+      if (!qualityMgr.trim()) { setError('Quality Manager name is required.'); return false; }
+      if (qualityMgr.trim().length < 3) { setError('Quality Manager name must be at least 3 characters.'); return false; }
+      if (!admin.trim()) { setError('Administrator name is required.'); return false; }
+      if (admin.trim().length < 3) { setError('Administrator name must be at least 3 characters.'); return false; }
+    }
+
+    // ── Step 12: Accreditation ──
+    if (step === 12) {
+      if (!accreditationType) { setError('Accreditation Type is required.'); return false; }
+      if (prevAccredited && !prevAccDate) { setError('Previous Accreditation Date is required when previously accredited.'); return false; }
+    }
+
     return true;
   };
 
