@@ -205,6 +205,15 @@ class AccreditationInfo(BaseModel):
 
 
 # ══════════════════════════════════════════════
+# Hospital Staffing
+# ══════════════════════════════════════════════
+class HospitalStaffing(BaseModel):
+    nurses_present: bool = Field(default=False, description="Whether nurses are present (Yes/No)")
+    nurses_document_uploaded: bool = Field(default=False, description="If yes, is the document uploaded")
+    nurses_outsourced: str = Field(default="", description="If no, specify Insource or Outsource")
+
+
+# ══════════════════════════════════════════════
 # COMBINED FORM
 # ══════════════════════════════════════════════
 class NABHEntryLevelForm(BaseModel):
@@ -212,6 +221,7 @@ class NABHEntryLevelForm(BaseModel):
     hospital_details: HospitalDetails
     opd_ipd: OPDIPDData
     clinical_services: ClinicalServicesScope
+    hospital_staffing: HospitalStaffing
     ot_sterilization: OTSterilization
     utilities: Utilities
     infection_control_bmw: InfectionControlBMW

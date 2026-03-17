@@ -14,6 +14,7 @@ const STEPS = [
   { label: 'Hospital Details', icon: <Building2 className="w-4 h-4" /> },
   { label: 'OPD / IPD Data', icon: <Activity className="w-4 h-4" /> },
   { label: 'Clinical Services', icon: <Stethoscope className="w-4 h-4" /> },
+  { label: 'Hospital Staffing', icon: <Users className="w-4 h-4" /> },
   { label: 'OT & Sterilization', icon: <ClipboardList className="w-4 h-4" /> },
   { label: 'Utilities', icon: <Zap className="w-4 h-4" /> },
   { label: 'Infection Control', icon: <HeartPulse className="w-4 h-4" /> },
@@ -90,7 +91,12 @@ export default function ComplianceForm() {
   const [topSurgeries, setTopSurgeries] = useState<string[]>(Array(10).fill(''));
   const [jointReplacements, setJointReplacements] = useState(0);
 
-  // ── STEP 5: OT & Sterilization ──
+  // ── STEP 5: Hospital Staffing ──
+  const [nursesPresent, setNursesPresent] = useState(false);
+  const [nursesDoc, setNursesDoc] = useState(false);
+  const [nursesOutsourced, setNursesOutsourced] = useState('');
+
+  // ── STEP 6: OT & Sterilization ──
   const [numOTs, setNumOTs] = useState(0);
   const [superSpeciality, setSuperSpeciality] = useState(false);
   const [exclusiveOT, setExclusiveOT] = useState(false);
@@ -101,7 +107,7 @@ export default function ComplianceForm() {
   const [flash, setFlash] = useState(false);
   const [otherSterilization, setOtherSterilization] = useState('');
 
-  // ── STEP 6: Utilities ──
+  // ── STEP 7: Utilities ──
   const [upsPresent, setUpsPresent] = useState(false);
   const [upsKV, setUpsKV] = useState(0);
   const [genPresent, setGenPresent] = useState(false);
@@ -115,7 +121,7 @@ export default function ComplianceForm() {
   const [trolleySafety, setTrolleySafety] = useState(false);
   const [wheelchairSafety, setWheelchairSafety] = useState(false);
 
-  // ── STEP 7: Infection Control & BMW ──
+  // ── STEP 8: Infection Control & BMW ──
   const [icCommittee, setIcCommittee] = useState(false);
   const [nursesIC, setNursesIC] = useState(false);
   const [handHygiene, setHandHygiene] = useState(false);
@@ -129,7 +135,7 @@ export default function ComplianceForm() {
   const [housekeeping, setHousekeeping] = useState(false);
   const [laundryProcess, setLaundryProcess] = useState(false);
 
-  // ── STEP 8: HR Training ──
+  // ── STEP 9: HR Training ──
   const [trScope, setTrScope] = useState(false);
   const [trLab, setTrLab] = useState(false);
   const [trImaging, setTrImaging] = useState(false);
@@ -143,7 +149,7 @@ export default function ComplianceForm() {
   const [trDisciplinary, setTrDisciplinary] = useState(false);
   const [trGrievance, setTrGrievance] = useState(false);
 
-  // ── STEP 9: Patient Processes ──
+  // ── STEP 10: Patient Processes ──
   const [consentForms, setConsentForms] = useState(false);
   const [recordsAudited, setRecordsAudited] = useState(false);
   const [feedbackSystem, setFeedbackSystem] = useState(false);
@@ -164,7 +170,7 @@ export default function ComplianceForm() {
   const [breakdownMaint, setBreakdownMaint] = useState('In house');
   const [preventiveMaint, setPreventiveMaint] = useState('In house');
 
-  // ── STEP 10: Lab, Imaging, Blood Bank ──
+  // ── STEP 11: Lab, Imaging, Blood Bank ──
   const [labCritical, setLabCritical] = useState(false);
   const [labTAT, setLabTAT] = useState(false);
   const [labScope, setLabScope] = useState(false);
@@ -174,12 +180,12 @@ export default function ComplianceForm() {
   const [bloodReaction, setBloodReaction] = useState(false);
   const [bloodCommittee, setBloodCommittee] = useState(false);
 
-  // ── STEP 11: Key Personnel ──
+  // ── STEP 12: Key Personnel ──
   const [medDirector, setMedDirector] = useState('');
   const [qualityMgr, setQualityMgr] = useState('');
   const [admin, setAdmin] = useState('');
 
-  // ── STEP 12: Accreditation ──
+  // ── STEP 13: Accreditation ──
   const [accreditationType, setAccreditationType] = useState('Entry Level');
   const [prevAccredited, setPrevAccredited] = useState(false);
   const [prevAccDate, setPrevAccDate] = useState('');
@@ -188,7 +194,25 @@ export default function ComplianceForm() {
     const copy = [...list]; copy[idx] = val; setter(copy);
   };
 
+  const validateStep = () => {
+    setError(null);
+    if (step === 0 && (!hospitalName || !regNumber || !email || !phone)) {
+      setError('Please fill all required (*) fields.'); return false;
+    }
+    if (step === 1 && (!hospitalType || !ownershipType || !sanctionedBeds || !operationalBeds)) {
+      setError('Hospital type, ownership, and valid bed capacities are required.'); return false;
+    }
+    if (step === 2 && (!opd12 || !admissions12)) {
+      setError('Required OPD and Admissions data must be provided.'); return false;
+    }
+    if (step === 11 && (!medDirector || !qualityMgr || !admin)) {
+      setError('All key personnel names are required.'); return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validateStep()) return;
     setLoading(true); setError(null); setResult(null);
     const payload = {
       basic_info: { hospital_name: hospitalName, registration_number: regNumber, contact_email: email, phone },
@@ -208,6 +232,9 @@ export default function ComplianceForm() {
         top_10_clinical_services: topServices, top_10_diagnoses: topDiagnoses,
         top_10_surgical_procedures: topSurgeries, number_of_joint_replacements_yearly: jointReplacements,
         clinical_service_volumes: [],
+      },
+      hospital_staffing: {
+        nurses_present: nursesPresent, nurses_document_uploaded: nursesDoc, nurses_outsourced: nursesOutsourced,
       },
       ot_sterilization: {
         number_of_ots: numOTs, performs_super_speciality_surgeries: superSpeciality,
@@ -475,7 +502,23 @@ export default function ComplianceForm() {
           <Num label="Joint Replacements (last 1 year)" v={jointReplacements} set={setJointReplacements} />
         </div>}
 
-        {step === 4 && <div className="space-y-5">
+        {step === 4 && <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Tog label="Nurses Present at Hospital?" c={nursesPresent} set={setNursesPresent} />
+            {nursesPresent ? (
+              <Tog label="Upload Nurses Document (Evidence)" c={nursesDoc} set={setNursesDoc} />
+            ) : (
+              <Sel label="Insource or Outsource Nurses?" v={nursesOutsourced} set={setNursesOutsourced} opts={['','Insourced','Outsourced']} labels={['Select','Insourced','Outsourced']} />
+            )}
+          </div>
+          {nursesDoc && (
+            <div className="bg-indigo-950/30 p-4 border border-indigo-500/30 rounded-xl text-sm text-indigo-300">
+              <span className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-emerald-500" /> Nurse document uploaded successfully.</span>
+            </div>
+          )}
+        </div>}
+
+        {step === 5 && <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Num label="Number of OTs *" v={numOTs} set={setNumOTs} />
             <Tog label="Super-Speciality Surgeries?" c={superSpeciality} set={setSuperSpeciality} />
@@ -491,7 +534,7 @@ export default function ComplianceForm() {
           <Inp label="Other Sterilization Method" v={otherSterilization} set={setOtherSterilization} />
         </div>}
 
-        {step === 5 && <div className="space-y-5">
+        {step === 6 && <div className="space-y-5">
           <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Electrical</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Tog label="UPS Present?" c={upsPresent} set={setUpsPresent} />
@@ -515,7 +558,7 @@ export default function ComplianceForm() {
           </div>
         </div>}
 
-        {step === 6 && <div className="space-y-5">
+        {step === 7 && <div className="space-y-5">
           <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Infection Control</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Infection Control Committee *" c={icCommittee} set={setIcCommittee} />
@@ -536,7 +579,7 @@ export default function ComplianceForm() {
           </div>
         </div>}
 
-        {step === 7 && <div className="space-y-5">
+        {step === 8 && <div className="space-y-5">
           <p className="text-xs text-slate-500 bg-slate-900/50 p-3 rounded-lg">Select all training programs that have been conducted at your hospital.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Scope of Services" c={trScope} set={setTrScope} />
@@ -557,7 +600,7 @@ export default function ComplianceForm() {
           </div>
         </div>}
 
-        {step === 8 && <div className="space-y-5">
+        {step === 9 && <div className="space-y-5">
           <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Documentation & Patient Rights</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Standard Consent Forms Used" c={consentForms} set={setConsentForms} />
@@ -588,7 +631,7 @@ export default function ComplianceForm() {
           </div>
         </div>}
 
-        {step === 9 && <div className="space-y-5">
+        {step === 10 && <div className="space-y-5">
           <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Laboratory</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Tog label="Critical Result Reporting Register" c={labCritical} set={setLabCritical} />
@@ -608,13 +651,13 @@ export default function ComplianceForm() {
           </div>
         </div>}
 
-        {step === 10 && <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {step === 11 && <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Inp label="Medical Director *" v={medDirector} set={setMedDirector} ph="Enter medical director name" />
           <Inp label="Quality Manager *" v={qualityMgr} set={setQualityMgr} ph="Enter quality manager name" />
           <Inp label="Administrator *" v={admin} set={setAdmin} ph="Enter administrator name" />
         </div>}
 
-        {step === 11 && <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {step === 12 && <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Sel label="Accreditation Type *" v={accreditationType} set={setAccreditationType} opts={['Entry Level','Full','Pre-Accreditation','Renewal']} labels={['Entry Level','Full','Pre-Accreditation','Renewal']} />
           <Tog label="Previously Accredited" c={prevAccredited} set={setPrevAccredited} />
           {prevAccredited && <Inp label="Previous Accreditation Date" v={prevAccDate} set={setPrevAccDate} type="date" />}
@@ -628,7 +671,7 @@ export default function ComplianceForm() {
           <ChevronLeft className="w-4 h-4" /> Previous
         </button>
         {step < STEPS.length - 1 ? (
-          <button onClick={() => setStep(step + 1)}
+          <button onClick={() => { if (validateStep()) setStep(step + 1); }}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-2.5 rounded-full font-semibold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] cursor-pointer">
             Next <ChevronRight className="w-4 h-4" />
           </button>

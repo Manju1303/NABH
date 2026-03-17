@@ -428,6 +428,7 @@ def export_csv():
         "OT & Sterilization (/10)", "Utilities (/5)", "Infection Control (/15)",
         "HR Training (/10)", "Patient Processes (/15)", "Lab/Imaging (/5)",
         "Key Personnel (/5)", "Total Score (/100)", "Readiness %", "Accreditation Ready",
+        "Nurses Present", "Nurses Document Uploaded", "Nurses Outsourced/Insourced",
         "Total Deficiencies", "Critical Deficiencies",
     ]
 
@@ -449,6 +450,7 @@ def export_csv():
         pp = fd.get("patient_processes", {})
         li = fd.get("lab_imaging_blood", {})
         kp = fd.get("key_personnel", {})
+        hs = fd.get("hospital_staffing", {})
         ai = fd.get("accreditation_info", {})
         ss = rec.get("section_scores", {})
 
@@ -529,6 +531,9 @@ def export_csv():
             "Total Score (/100)": rec.get("score"),
             "Readiness %": round(rec.get("readiness_percentage", 0), 2),
             "Accreditation Ready": "YES" if rec.get("is_ready") else "NO",
+            "Nurses Present": yn(hs.get("nurses_present")),
+            "Nurses Document Uploaded": yn(hs.get("nurses_document_uploaded")),
+            "Nurses Outsourced/Insourced": hs.get("nurses_outsourced"),
             "Total Deficiencies": rec.get("deficiency_count", ""),
             "Critical Deficiencies": rec.get("critical_deficiencies", ""),
         })
