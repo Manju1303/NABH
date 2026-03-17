@@ -207,8 +207,14 @@ class AccreditationInfo(BaseModel):
 # ══════════════════════════════════════════════
 # Hospital Staffing
 # ══════════════════════════════════════════════
+class NurseDetail(BaseModel):
+    name: str
+    qualification: str
+    certificate_name: Optional[str] = None
+
 class HospitalStaffing(BaseModel):
     nurses_present: bool = Field(default=False, description="Whether nurses are present (Yes/No)")
+    nurses_list: List[NurseDetail] = Field(default_factory=list, description="List of nurses details")
     nurses_document_uploaded: bool = Field(default=False, description="If yes, is the document uploaded")
     nurses_outsourced: str = Field(default="", description="If no, specify Insource or Outsource")
 

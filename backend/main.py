@@ -213,8 +213,6 @@ def submit_nabh_form(form_data: NABHEntryLevelForm):
     hd = form_data.hospital_details
 
     record = {
-        "id": len(load_submissions()) + 1,
-        "submitted_at": datetime.now().isoformat(),
         "hospital_name": bi.hospital_name,
         "registration_number": bi.registration_number,
         "contact_email": bi.contact_email,
@@ -238,7 +236,19 @@ def submit_nabh_form(form_data: NABHEntryLevelForm):
     }
 
     submissions = load_submissions()
-    submissions.append(record)
+
+    existing_idx = next((i for i, r in enumerate(submissions) if r["registration_number"] == bi.registration_number), None)
+    
+    if existing_idx is not None:
+        record["id"] = submissions[existing_idx]["id"]
+        record["submitted_at"] = submissions[existing_idx]["submitted_at"]
+        record["updated_at"] = datetime.now().isoformat()
+        submissions[existing_idx] = record
+    else:
+        record["id"] = max([r.get("id", 0) for r in submissions], default=0) + 1
+        record["submitted_at"] = datetime.now().isoformat()
+        submissions.append(record)
+
     save_submissions(submissions)
 
     return {

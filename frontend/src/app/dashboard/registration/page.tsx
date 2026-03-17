@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '@/lib/api';
 import {
   Send, CheckCircle, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight,
   Building2, Stethoscope, Users, Award, FileText, Activity, Zap,
   ShieldCheck, GraduationCap, HeartPulse, FlaskConical, ClipboardList,
-  Clock, CalendarClock, Bell
+  Clock, CalendarClock, Bell, Plus, Trash
 } from 'lucide-react';
 
 const STEPS = [
@@ -94,6 +94,7 @@ export default function ComplianceForm() {
 
   // ── STEP 5: Hospital Staffing ──
   const [nursesPresent, setNursesPresent] = useState(false);
+  const [nursesList, setNursesList] = useState<{name: string; qualification: string; certificate_name: string}[]>([{name: '', qualification: '', certificate_name: ''}]);
   const [nursesDoc, setNursesDoc] = useState(false);
   const [nursesOutsourced, setNursesOutsourced] = useState('');
 
@@ -191,6 +192,172 @@ export default function ComplianceForm() {
   const [prevAccredited, setPrevAccredited] = useState(false);
   const [prevAccDate, setPrevAccDate] = useState('');
 
+  useEffect(() => {
+    // Attempt to load existing form data on mount
+    axios.get(`${API_BASE_URL}/api/submissions`)
+      .then(res => {
+        const records = res.data.records;
+        if (records && records.length > 0) {
+          const latest = records[records.length - 1]; // Assume latest record for this demo
+          const fd = latest.form_data;
+          if (!fd) return;
+          
+          const bi = fd.basic_info || {};
+          setHospitalName(bi.hospital_name || '');
+          setRegNumber(bi.registration_number || '');
+          setEmail(bi.contact_email || '');
+          setPhone(bi.phone || '');
+          
+          const hd = fd.hospital_details || {};
+          setHospitalType(hd.hospital_type || '');
+          setOwnershipType(hd.ownership_type || '');
+          setBuiltUpArea(hd.built_up_area_sqmt || 0);
+          setBuildings(hd.number_of_buildings || 1);
+          setSanctionedBeds(hd.total_sanctioned_beds || 0);
+          setOperationalBeds(hd.operational_beds || 0);
+          setEmergencyBeds(hd.casualty_emergency_beds || 0);
+          setIcuBeds(hd.icu_beds || 0);
+          setHduBeds(hd.hdu_beds || 0);
+          setPrivateBeds(hd.private_ward_beds || 0);
+          setSemiPrivateBeds(hd.semi_private_ward_beds || 0);
+          setGeneralBeds(hd.general_ward_beds || 0);
+
+          const oi = fd.opd_ipd || {};
+          setOpd12(oi.opd_patients_12_months || 0);
+          setAdmissions12(oi.admissions_12_months || 0);
+          setInpatientDays(oi.inpatient_days_monthly_avg || 0);
+          setAvailableBedDays(oi.available_bed_days_monthly_avg || 0);
+          setAvgOccupancy(oi.average_occupancy_pct || 0);
+          setIcuOccupancy(oi.icu_occupancy_pct || 0);
+          setWardOccupancy(oi.ward_occupancy_pct || 0);
+          setIcuInpatientDays(oi.icu_inpatient_days_monthly_avg || 0);
+          setAvailableIcuBedDays(oi.available_icu_bed_days_monthly_avg || 0);
+
+          const cs = fd.clinical_services || {};
+          if (cs.top_10_clinical_services) setTopServices(cs.top_10_clinical_services);
+          if (cs.top_10_diagnoses) setTopDiagnoses(cs.top_10_diagnoses);
+          if (cs.top_10_surgical_procedures) setTopSurgeries(cs.top_10_surgical_procedures);
+          setJointReplacements(cs.number_of_joint_replacements_yearly || 0);
+
+      const hs = fd.hospital_staffing || {};
+          setNursesPresent(hs.nurses_present || false);
+          
+          if (hs.nurses_list && hs.nurses_list.length > 0) {
+            setNursesList(hs.nurses_list);
+            setNursesDoc(hs.nurses_list.some((n: any) => n.certificate_name) || hs.nurses_document_uploaded || false);
+          } else {
+            // Legacy fallback
+            setNursesList([{
+              name: hs.nurse_name || '', 
+              qualification: '', 
+              certificate_name: hs.certificate_name || ''
+            }]);
+            if (hs.certificate_name) setNursesDoc(true);
+            else setNursesDoc(hs.nurses_document_uploaded || false);
+          }
+          
+          setNursesOutsourced(hs.nurses_outsourced || '');
+
+          const ots = fd.ot_sterilization || {};
+          setNumOTs(ots.number_of_ots || 0);
+          setSuperSpeciality(ots.performs_super_speciality_surgeries || false);
+          setExclusiveOT(ots.exclusive_ot_for_super_speciality || false);
+          setNumSuperOTs(ots.number_of_super_speciality_ots || 0);
+          setSteamAutoclave(ots.steam_autoclave || false);
+          setEto(ots.eto_sterilization || false);
+          setPlasma(ots.plasma_sterilization || false);
+          setFlash(ots.flash_sterilization || false);
+          setOtherSterilization(ots.other_sterilization || '');
+
+          const ut = fd.utilities || {};
+          setUpsPresent(ut.ups_present || false);
+          setUpsKV(ut.ups_capacity_kv || 0);
+          setGenPresent(ut.generator_present || false);
+          setGenKV(ut.generator_capacity_kv || 0);
+          setWaterTanks(ut.total_water_tanks || 0);
+          setWaterCapacity(ut.total_water_capacity_litres || 0);
+          setAltWater(ut.alternate_water_source || false);
+          setAltWaterUsage(ut.alternate_water_usage || '');
+          setTrolleyElevators(ut.elevators_for_trolleys || 0);
+          setPeopleElevators(ut.elevators_for_people || 0);
+          setTrolleySafety(ut.trolleys_with_safety_belts || false);
+          setWheelchairSafety(ut.wheelchairs_with_safety_belts || false);
+
+          const ic = fd.infection_control_bmw || {};
+          setIcCommittee(ic.has_infection_control_committee || false);
+          setNursesIC(ic.nurses_trained_in_infection_control || false);
+          setHandHygiene(ic.hand_hygiene_audit_conducted || false);
+          setBmwAuth(ic.has_biomedical_waste_authorization || false);
+          setColorBins(ic.colour_coded_bins_available || false);
+          setSegregationInstr(ic.segregation_instructions_displayed || false);
+          setClosedTransport(ic.closed_container_transport || false);
+          setNeedleCutters(ic.needle_cutters_used || false);
+          setBmwStorage(ic.bmw_storage_facility || false);
+          setBiohazardSign(ic.biohazard_sign_displayed || false);
+          setHousekeeping(ic.housekeeping_checklists_maintained || false);
+          setLaundryProcess(ic.laundry_segregation_process || false);
+
+          const hr = fd.hr_training || {};
+          setTrScope(hr.training_scope_of_services || false);
+          setTrLab(hr.training_safe_lab_practices || false);
+          setTrImaging(hr.training_safe_imaging_practices || false);
+          setTrChild(hr.training_child_abduction_prevention || false);
+          setTrIC(hr.training_infection_control || false);
+          setTrFire(hr.fire_mock_drills_conducted || false);
+          setTrSpill(hr.training_spill_management || false);
+          setTrSafety(hr.training_safety_education || false);
+          setTrNeedle(hr.training_needle_stick_injury || false);
+          setTrMedError(hr.training_medication_error || false);
+          setTrDisciplinary(hr.training_disciplinary_procedures || false);
+          setTrGrievance(hr.training_grievance_handling || false);
+
+          const pp = fd.patient_processes || {};
+          setConsentForms(pp.has_standard_consent_forms || false);
+          setRecordsAudited(pp.medical_records_audited_monthly || false);
+          setFeedbackSystem(pp.patient_feedback_system || false);
+          setPatientRights(pp.patient_rights_displayed || false);
+          setGrievance(pp.grievance_redressal_mechanism || false);
+          setLasaProtocol(pp.lasa_drugs_storage_protocol || false);
+          setMedLabelling(pp.medication_labelling_protocol || false);
+          setFireNoc(pp.fire_noc_valid || false);
+          setFireDrills(pp.regular_fire_drills || false);
+          setCprTrained(pp.staff_trained_in_cpr || false);
+          setEmergency24x7(pp.emergency_services_24x7 || false);
+          setRadSignage(pp.radiation_hazard_signage || false);
+          setPcpndtSignage(pp.pcpndt_declaration_displayed || false);
+          setBioSignage(pp.biohazard_signage || false);
+          setFireExitSignage(pp.fire_exit_signage || false);
+          setDirectionalSignage(pp.directional_signage || false);
+          setDeptSignage(pp.departmental_signage || false);
+          setBreakdownMaint(pp.breakdown_maintenance_type || 'In house');
+          setPreventiveMaint(pp.preventive_maintenance_type || 'In house');
+
+          const lib = fd.lab_imaging_blood || {};
+          setLabCritical(lib.lab_critical_result_reporting || false);
+          setLabTAT(lib.lab_tat_displayed || false);
+          setLabScope(lib.lab_scope_documented || false);
+          setImgCritical(lib.imaging_critical_result_reporting || false);
+          setImgTAT(lib.imaging_tat_displayed || false);
+          setImgScope(lib.imaging_scope_documented || false);
+          setBloodReaction(lib.blood_bank_transfusion_reaction_forms || false);
+          setBloodCommittee(lib.blood_transfusion_committee_active || false);
+
+          const kp = fd.key_personnel || {};
+          setMedDirector(kp.medical_director || '');
+          setQualityMgr(kp.quality_manager || '');
+          setAdmin(kp.administrator || '');
+
+          const ai = fd.accreditation_info || {};
+          setAccreditationType(ai.accreditation_type || 'Entry Level');
+          setPrevAccredited(ai.previously_accredited || false);
+          setPrevAccDate(ai.previous_accreditation_date || '');
+          
+          setSubmittedId(latest.id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const updateList = (list: string[], idx: number, val: string, setter: (l: string[]) => void) => {
     const copy = [...list]; copy[idx] = val; setter(copy);
   };
@@ -235,7 +402,10 @@ export default function ComplianceForm() {
         clinical_service_volumes: [],
       },
       hospital_staffing: {
-        nurses_present: nursesPresent, nurses_document_uploaded: nursesDoc, nurses_outsourced: nursesOutsourced,
+        nurses_present: nursesPresent, 
+        nurses_list: nursesPresent ? nursesList.filter((n) => n.name.trim() !== '') : [],
+        nurses_document_uploaded: nursesPresent ? nursesList.some(n => n.certificate_name) : false, 
+        nurses_outsourced: nursesOutsourced,
       },
       ot_sterilization: {
         number_of_ots: numOTs, performs_super_speciality_surgeries: superSpeciality,
@@ -485,16 +655,71 @@ export default function ComplianceForm() {
           <Num label="Joint Replacements (last 1 year)" v={jointReplacements} set={setJointReplacements} />
         </div>}
 
-        {step === 4 && <div className="space-y-5">
+        {step === 4 && <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Tog label="Nurses Present at Hospital?" c={nursesPresent} set={setNursesPresent} />
-            {nursesPresent ? (
-              <Tog label="Nurse Document Uploaded (Evidence)" c={nursesDoc} set={setNursesDoc} />
-            ) : (
+            {!nursesPresent && (
               <Sel label="Insource or Outsource Nurses?" v={nursesOutsourced} set={setNursesOutsourced} opts={['','Insourced','Outsourced']} labels={['Select','Insourced','Outsourced']} />
             )}
           </div>
-          {nursesDoc && <div className="p-3 rounded text-sm font-medium flex items-center gap-2" style={{ background: '#E8F5E9', color: '#2E7D32', border: '1px solid #A5D6A7' }}><CheckCircle className="w-4 h-4" /> Nurse document uploaded successfully.</div>}
+          
+          {nursesPresent && (
+            <div className="p-5 rounded-lg border bg-white" style={{ borderColor: '#E0E0E0' }}>
+              <div className="flex items-center justify-between mb-4 pb-2" style={{ borderBottom: '1px solid #E0E0E0' }}>
+                <h4 className="text-sm font-semibold" style={{ color: '#00695C' }}>Nurse Details (Registration details as in State Nursing Council)</h4>
+                <button onClick={() => setNursesList([...nursesList, {name: '', qualification: '', certificate_name: ''}])} className="flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded hover:bg-blue-100 transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> Add Nurse
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {nursesList.map((nurse, idx) => (
+                  <div key={idx} className="p-4 rounded border bg-gray-50 flex flex-col gap-4 relative">
+                    {nursesList.length > 1 && (
+                      <button onClick={() => setNursesList(nursesList.filter((_, i) => i !== idx))} className="absolute right-3 top-3 text-red-500 hover:text-red-700">
+                        <Trash className="w-4 h-4" />
+                      </button>
+                    )}
+                    <h5 className="text-xs font-semibold text-gray-500 uppercase">Nurse #{idx + 1}</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="hope-label">Name of Nurse *</label>
+                        <input type="text" value={nurse.name} onChange={(e) => {
+                          const n = [...nursesList]; n[idx].name = e.target.value; setNursesList(n);
+                        }} placeholder="Enter full name" className="hope-input" />
+                      </div>
+                      <div>
+                        <label className="hope-label">Qualification *</label>
+                        <input type="text" value={nurse.qualification} onChange={(e) => {
+                          const n = [...nursesList]; n[idx].qualification = e.target.value; setNursesList(n);
+                        }} placeholder="e.g. B.Sc Nursing, GNM" className="hope-input" />
+                      </div>
+                      <div>
+                        <label className="hope-label">Upload Certificate</label>
+                        <label className="flex items-center justify-center w-full h-[42px] px-3 border border-dashed rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" style={{ borderColor: '#BDBDBD', background: '#FFFFFF' }}>
+                          <div className="flex items-center gap-2 text-sm" style={{ color: '#616161' }}>
+                            <FileText className="w-4 h-4" />
+                            <span className="truncate max-w-[120px]">{nurse.certificate_name ? nurse.certificate_name : 'Browse PDF'}</span>
+                          </div>
+                          <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              const n = [...nursesList]; n[idx].certificate_name = e.target.files[0].name; setNursesList(n);
+                            }
+                          }} />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {nursesList.some(n => n.certificate_name) && (
+                <div className="mt-4 p-3 rounded text-sm font-medium flex items-center gap-2" style={{ background: '#E8F5E9', color: '#2E7D32', border: '1px solid #A5D6A7' }}>
+                  <CheckCircle className="w-4 h-4" /> Valid nursing council document(s) attached successfully.
+                </div>
+              )}
+            </div>
+          )}
         </div>}
 
         {step === 5 && <div className="space-y-5">
