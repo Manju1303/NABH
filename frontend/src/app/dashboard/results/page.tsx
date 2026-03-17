@@ -1,10 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '@/lib/api';
-import { ArrowLeft, TrendingUp, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, TrendingUp, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, Clock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+
+interface Deficiency {
+  id: string;
+  label: string;
+  severity: 'critical' | 'high' | 'medium';
+  description: string;
+}
 
 interface SubmissionRecord {
   id: number;
@@ -16,11 +23,14 @@ interface SubmissionRecord {
   readiness_percentage: number;
   is_ready: boolean;
   section_scores: Record<string, number>;
+  deficiencies?: Deficiency[];
+  deficiency_count?: number;
 }
 
 export default function ResultsPage() {
   const [records, setRecords] = useState<SubmissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     axios.get<{ total: number; records: SubmissionRecord[] }>(`${API_BASE_URL}/api/submissions`)
@@ -29,6 +39,10 @@ export default function ResultsPage() {
   }, []);
 
   const latest = records.length > 0 ? records[records.length - 1] : null;
+
+  const toggleExpand = (id: number) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -136,41 +150,111 @@ export default function ResultsPage() {
           {/* Full Table */}
           <div className="hope-card overflow-hidden">
             <div className="p-4" style={{ borderBottom: '1px solid #E0E0E0' }}>
-              <h2 className="text-sm font-semibold" style={{ color: '#212121' }}>Submission History</h2>
+              <h2 className="text-sm font-semibold" style={{ color: '#212121' }}>Submission History & Detail Reports</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead style={{ background: '#F5F7FA' }}>
                   <tr className="text-xs uppercase tracking-wider" style={{ color: '#616161' }}>
                     <th className="px-5 py-3">ID</th>
-                    <th className="px-5 py-3">Date</th>
-                    <th className="px-5 py-3">Hospital</th>
+                    <th className="px-5 py-3">Hospital / Date</th>
                     <th className="px-5 py-3">Score</th>
-                    <th className="px-5 py-3">Readiness</th>
-                    <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3">Deficiencies</th>
+                    <th className="px-5 py-3 text-right pr-10">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {records.map(rec => (
-                    <tr key={rec.id} className="hover:bg-gray-50 transition-colors" style={{ borderTop: '1px solid #E0E0E0' }}>
-                      <td className="px-5 py-3 font-mono text-xs" style={{ color: '#9E9E9E' }}>#{rec.id}</td>
-                      <td className="px-5 py-3 text-xs" style={{ color: '#616161' }}>{new Date(rec.submitted_at).toLocaleDateString()}</td>
-                      <td className="px-5 py-3 font-medium" style={{ color: '#212121' }}>{rec.hospital_name}</td>
-                      <td className="px-5 py-3 font-mono" style={{ color: '#424242' }}>{rec.score}/{rec.max_score}</td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 rounded-full overflow-hidden" style={{ background: '#E0E0E0' }}>
-                            <div className="h-full rounded-full" style={{ width: `${rec.readiness_percentage}%`, background: rec.is_ready ? '#2E7D32' : '#F57F17' }} />
+                <tbody className="divide-y" style={{ borderColor: '#E0E0E0' }}>
+                  {records.slice().reverse().map(rec => (
+                    <React.Fragment key={rec.id}>
+                      <tr className={`${expandedId === rec.id ? 'bg-blue-50/30' : 'hover:bg-gray-50'} transition-colors cursor-pointer`} onClick={() => toggleExpand(rec.id)}>
+                        <td className="px-5 py-4 font-mono text-xs" style={{ color: '#9E9E9E' }}>#{rec.id}</td>
+                        <td className="px-5 py-4">
+                          <p className="font-semibold text-sm" style={{ color: '#212121' }}>{rec.hospital_name}</p>
+                          <p className="text-[10px] uppercase font-bold tracking-tight mt-0.5" style={{ color: '#9E9E9E' }}>
+                            {new Date(rec.submitted_at).toLocaleDateString()} at {new Date(rec.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2">
+                             <div className="w-12 h-1.5 rounded-full overflow-hidden bg-gray-200">
+                                <div className="h-full" style={{ width: `${rec.readiness_percentage}%`, background: rec.is_ready ? '#2E7D32' : '#FBC02D' }} />
+                             </div>
+                             <span className="text-[11px] font-bold" style={{ color: rec.is_ready ? '#2E7D32' : '#F57F17' }}>{Math.round(rec.readiness_percentage)}%</span>
                           </div>
-                          <span className="text-xs" style={{ color: '#9E9E9E' }}>{Math.round(rec.readiness_percentage)}%</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="px-2 py-1 rounded text-xs font-medium" style={rec.is_ready ? { background: '#E8F5E9', color: '#2E7D32' } : { background: '#FFF8E1', color: '#F57F17' }}>
-                          {rec.is_ready ? 'Ready' : 'Not Ready'}
-                        </span>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="px-5 py-4">
+                          {rec.deficiency_count && rec.deficiency_count > 0 ? (
+                            <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#C62828' }}>
+                              <AlertCircle className="w-3 h-3" /> {rec.deficiency_count} Pending Fixes
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#2E7D32' }}>
+                              <CheckCircle className="w-3 h-3" /> All Criteria Met
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right pr-8">
+                           <button className="flex items-center gap-1.5 ml-auto text-xs font-bold uppercase tracking-wider transition-colors" style={{ color: '#0277BD' }}>
+                              {expandedId === rec.id ? <><ChevronUp className="w-4 h-4" /> Close Report</> : <><ChevronDown className="w-4 h-4" /> View Report</>}
+                           </button>
+                        </td>
+                      </tr>
+                      {expandedId === rec.id && (
+                        <tr style={{ background: '#FCFDFF' }}>
+                          <td colSpan={5} className="px-10 py-6 border-t border-b" style={{ borderColor: '#E0E0E0' }}>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                              <div className="lg:col-span-1 border-r pr-8" style={{ borderColor: '#F0F0F0' }}>
+                                <h4 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-4 italic">Analysis Summary</h4>
+                                <div className="space-y-4">
+                                  {Object.entries(rec.section_scores).map(([k, v]) => (
+                                    <div key={k}>
+                                      <div className="flex justify-between text-xs mb-1">
+                                        <span className="capitalize">{k.replace(/_/g, ' ')}</span>
+                                        <span className="font-bold">{v}%</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full rounded-full" style={{ width: `${v}%`, background: v >= 100 ? '#2E7D32' : v >= 50 ? '#FBC02D' : '#C62828' }} />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="lg:col-span-2">
+                                <h4 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-4 italic">Standard-wise Deficiency List</h4>
+                                {rec.deficiencies && rec.deficiencies.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {rec.deficiencies.map((def, idx) => (
+                                      <div key={def.id || idx} className="p-3 rounded border bg-white flex items-start gap-4">
+                                        <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${
+                                          def.severity === 'critical' ? 'bg-red-600 animate-pulse' : 
+                                          def.severity === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
+                                        }`} />
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-bold text-xs" style={{ color: '#212121' }}>{def.label}</span>
+                                            <span className={`text-[10px] font-bold uppercase px-1.5 rounded italic ${
+                                              def.severity === 'critical' ? 'text-red-700 bg-red-50' : 
+                                              def.severity === 'high' ? 'text-orange-700 bg-orange-50' : 'text-yellow-700 bg-yellow-50'
+                                            }`}>{def.severity}</span>
+                                          </div>
+                                          <p className="text-xs text-gray-500 leading-relaxed font-medium">{def.description}</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                                    <CheckCircle className="w-8 h-8 text-green-500 mb-2" />
+                                    <p className="text-sm font-bold text-green-700">Perfect Compliance!</p>
+                                    <p className="text-xs text-green-600">No mandatory deficiencies found for this submission.</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

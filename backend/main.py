@@ -148,6 +148,7 @@ def sanitize_form_data(data: dict) -> dict:
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "nabh_data.json")
 DEADLINES_FILE = os.path.join(os.path.dirname(__file__), "nabh_deadlines.json")
+REMARKS_FILE = os.path.join(os.path.dirname(__file__), "nabh_remarks.json")
 
 
 def load_submissions() -> list[dict]:
@@ -172,6 +173,18 @@ def load_deadlines() -> dict:
 def save_deadlines(deadlines: dict):
     with open(DEADLINES_FILE, "w") as f:
         json.dump(deadlines, f, indent=2, default=str)
+
+
+def load_remarks() -> dict:
+    if os.path.exists(REMARKS_FILE):
+        with open(REMARKS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+
+def save_remarks(remarks: dict):
+    with open(REMARKS_FILE, "w") as f:
+        json.dump(remarks, f, indent=2, default=str)
 
 
 # ═══════════════════════════════════════════
@@ -416,7 +429,45 @@ def delete_submission(record_id: int):
     deadlines = load_deadlines()
     deadlines.pop(str(record_id), None)
     save_deadlines(deadlines)
+    # Also clean remarks
+    all_remarks = load_remarks()
+    all_remarks.pop(str(record_id), None)
+    save_remarks(all_remarks)
     return {"status": "deleted", "remaining": len(new_records)}
+
+
+@app.get("/api/submissions/{record_id}/remarks")
+def get_remarks(record_id: int):
+    all_remarks = load_remarks()
+    return all_remarks.get(str(record_id), [])
+
+
+@app.post("/api/submissions/{record_id}/remarks")
+def add_remark(record_id: int, payload: dict):
+    author = sanitize_string(payload.get("author", "Hospital Admin"))
+    message = sanitize_string(payload.get("message", ""))
+    role = sanitize_string(payload.get("role", "Applicant"))
+    category = sanitize_string(payload.get("category", "Observation"))
+
+    if not message:
+        raise HTTPException(status_code=400, detail="Message is required.")
+
+    all_remarks = load_remarks()
+    record_key = str(record_id)
+    if record_key not in all_remarks:
+        all_remarks[record_key] = []
+
+    remark = {
+        "id": int(time.time() * 1000),
+        "date": datetime.now().isoformat().split('T')[0],
+        "author": author,
+        "role": role,
+        "message": message,
+        "category": category
+    }
+    all_remarks[record_key].append(remark)
+    save_remarks(all_remarks)
+    return remark
 
 
 @app.get("/api/export-csv")
