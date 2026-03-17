@@ -730,8 +730,8 @@ export default function ComplianceForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Sel label="Hospital Type *" v={hospitalType} set={setHospitalType} opts={['','Government','Private','NGO','Armed Forces']} labels={['Select Type','Government','Private','NGO','Armed Forces']} />
             <Sel label="Ownership Type *" v={ownershipType} set={setOwnershipType} opts={['','Proprietorship','Partnership','Trust','Society','Corporate']} labels={['Select','Proprietorship','Partnership','Trust','Society','Corporate']} />
-            <Num label="Built-up Area (sq.mt)" v={builtUpArea} set={setBuiltUpArea} />
-            <Num label="Number of Buildings" v={buildings} set={setBuildings} />
+            <Num label="Built-up Area (sq.mt) *" v={builtUpArea} set={setBuiltUpArea} />
+            <Num label="Number of Buildings *" v={buildings} set={setBuildings} />
           </div>
           <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Bed Strength</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -855,14 +855,14 @@ export default function ComplianceForm() {
           <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Electrical</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Tog label="UPS Present?" c={upsPresent} set={setUpsPresent} />
-            {upsPresent && <Num label="UPS Capacity (KV)" v={upsKV} set={setUpsKV} />}
+            {upsPresent && <Num label="UPS Capacity (KV) *" v={upsKV} set={setUpsKV} />}
             <Tog label="Generator Present?" c={genPresent} set={setGenPresent} />
-            {genPresent && <Num label="Generator Capacity (KV)" v={genKV} set={setGenKV} />}
+            {genPresent && <Num label="Generator Capacity (KV) *" v={genKV} set={setGenKV} />}
           </div>
           <h4 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#00695C' }}>Water Supply</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Num label="Total Water Tanks" v={waterTanks} set={setWaterTanks} />
-            <Num label="Total Capacity (in 1000 litres)" v={waterCapacity} set={setWaterCapacity} />
+            <Num label="Total Water Tanks *" v={waterTanks} set={setWaterTanks} />
+            <Num label="Total Capacity (in 1000 litres) *" v={waterCapacity} set={setWaterCapacity} />
             <Tog label="Alternate Water Source?" c={altWater} set={setAltWater} />
             {altWater && <Sel label="Alternate Usage" v={altWaterUsage} set={setAltWaterUsage} opts={['','Drinking','Not for drinking']} labels={['Select','Drinking','Not for drinking']} />}
           </div>
@@ -1003,15 +1003,24 @@ export default function ComplianceForm() {
   );
 }
 
+// ─── Red star label helper ───
+function RedStarLabel({ text, className = 'hope-label' }: { text: string; className?: string }) {
+  if (text.includes('*')) {
+    const parts = text.split('*');
+    return <span className={className}>{parts[0]}<span style={{ color: '#C62828', fontWeight: 700 }}>*</span>{parts.slice(1).join('')}</span>;
+  }
+  return <span className={className}>{text}</span>;
+}
+
 // ─── HOPE-styled reusable components ───
 function Inp({ label, v, set, type = 'text', ph = '' }: { label: string; v: string; set: (s: string) => void; type?: string; ph?: string }) {
-  return <div><label className="hope-label">{label}</label><input type={type} value={v} onChange={e => set(e.target.value)} placeholder={ph} className="hope-input" /></div>;
+  return <div><RedStarLabel text={label} /><input type={type} value={v} onChange={e => set(e.target.value)} placeholder={ph} className="hope-input" /></div>;
 }
 function Num({ label, v, set }: { label: string; v: number; set: (n: number) => void }) {
-  return <div><label className="hope-label">{label}</label><input type="number" value={v} onChange={e => set(Number(e.target.value))} className="hope-input" /></div>;
+  return <div><RedStarLabel text={label} /><input type="number" value={v} onChange={e => set(Number(e.target.value))} className="hope-input" /></div>;
 }
 function Sel({ label, v, set, opts, labels }: { label: string; v: string; set: (s: string) => void; opts: string[]; labels: string[] }) {
-  return <div><label className="hope-label">{label}</label><select value={v} onChange={e => set(e.target.value)} className="hope-select">{opts.map((o, i) => <option key={o} value={o}>{labels[i]}</option>)}</select></div>;
+  return <div><RedStarLabel text={label} /><select value={v} onChange={e => set(e.target.value)} className="hope-select">{opts.map((o, i) => <option key={o} value={o}>{labels[i]}</option>)}</select></div>;
 }
 function Tog({ label, c, set }: { label: string; c: boolean; set: (b: boolean) => void }) {
   return (
@@ -1019,10 +1028,11 @@ function Tog({ label, c, set }: { label: string; c: boolean; set: (b: boolean) =
       <button type="button" onClick={() => set(!c)} className={`hope-toggle ${c ? 'on' : ''}`}>
         <span className="knob" />
       </button>
-      <span className="text-sm" style={{ color: '#424242' }}>{label}</span>
+      <RedStarLabel text={label} className="text-sm" />
     </label>
   );
 }
 function ListInput({ label, items, setItems, updateList, required }: { label: string; items: string[]; setItems: (l: string[]) => void; updateList: (l: string[], i: number, v: string, s: (l: string[]) => void) => void; required: number }) {
-  return <div><label className="hope-label mb-2">{label}</label><div className="grid grid-cols-1 md:grid-cols-2 gap-2">{items.map((item, i) => <div key={i} className="flex items-center gap-2"><span className="text-xs w-5 shrink-0" style={{ color: '#9E9E9E' }}>{i + 1}.</span><input value={item} onChange={e => updateList(items, i, e.target.value, setItems)} placeholder={i < required ? 'Required *' : 'Optional'} className="hope-input text-sm" /></div>)}</div></div>;
+  return <div><RedStarLabel text={label} className="hope-label mb-2" /><div className="grid grid-cols-1 md:grid-cols-2 gap-2">{items.map((item, i) => <div key={i} className="flex items-center gap-2"><span className="text-xs w-5 shrink-0" style={{ color: '#9E9E9E' }}>{i + 1}.</span><input value={item} onChange={e => updateList(items, i, e.target.value, setItems)} placeholder={i < required ? 'Required *' : 'Optional'} className="hope-input text-sm" /></div>)}</div></div>;
 }
+
