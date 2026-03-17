@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, LayoutDashboard, Database, Settings, BookOpen, ClipboardList } from 'lucide-react';
+import { Activity, LayoutDashboard, Database, Settings, BookOpen, ClipboardList, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -10,6 +10,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const links = [
     { href: '/dashboard', label: 'Onboarding', icon: <ClipboardList className="w-5 h-5" /> },
     { href: '/dashboard/standards', label: 'Standards', icon: <BookOpen className="w-5 h-5" /> },
+    { href: '/dashboard/documents', label: 'Documents', icon: <FileText className="w-5 h-5" /> },
     { href: '/dashboard/analytics', label: 'Analytics', icon: <Activity className="w-5 h-5" /> },
     { href: '/dashboard/data', label: 'Database Logs', icon: <Database className="w-5 h-5" /> },
     { href: '/', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
