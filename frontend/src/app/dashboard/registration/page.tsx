@@ -364,14 +364,46 @@ export default function ComplianceForm() {
 
   const validateStep = () => {
     setError(null);
-    if (step === 0 && (!hospitalName || !regNumber || !email || !phone)) {
-      setError('Please fill all required (*) fields.'); return false;
+    if (step === 0) {
+      if (!hospitalName || !regNumber || !email || !phone) {
+        setError('Please fill all required (*) fields.'); return false;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address.'); return false;
+      }
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(phone)) {
+        setError('Phone number must be exactly 10 digits.'); return false;
+      }
     }
-    if (step === 1 && (!hospitalType || !ownershipType || !sanctionedBeds || !operationalBeds)) {
-      setError('Hospital type, ownership, and valid bed capacities are required.'); return false;
+    if (step === 1) {
+      if (!hospitalType || !ownershipType) {
+        setError('Hospital type and ownership are required.'); return false;
+      }
+      if (sanctionedBeds <= 0 || operationalBeds <= 0) {
+        setError('Sanctioned and operational beds must be greater than 0.'); return false;
+      }
     }
-    if (step === 2 && (!opd12 || !admissions12)) {
-      setError('Required OPD and Admissions data must be provided.'); return false;
+    if (step === 2 && (opd12 <= 0 || admissions12 <= 0)) {
+      setError('Required OPD and Admissions data must be greater than 0.'); return false;
+    }
+    if (step === 3) {
+      const validServices = topServices.filter(s => s.trim() !== '').length;
+      const validDiagnoses = topDiagnoses.filter(s => s.trim() !== '').length;
+      const validSurgeries = topSurgeries.filter(s => s.trim() !== '').length;
+      if (validServices < 5 || validDiagnoses < 5 || validSurgeries < 5) {
+        setError('Please provide at least the top 5 entries for Services, Diagnoses, and Surgeries.'); return false;
+      }
+    }
+    if (step === 4 && nursesPresent) {
+      const invalidNurse = nursesList.find(n => !n.name.trim() || !n.qualification.trim());
+      if (invalidNurse) {
+        setError('All added nurses must have a Name and Qualification.'); return false;
+      }
+      if (nursesList.length === 0) {
+        setError('Please add at least one nurse or uncheck "Nurses Present".'); return false;
+      }
     }
     if (step === 11 && (!medDirector || !qualityMgr || !admin)) {
       setError('All key personnel names are required.'); return false;
