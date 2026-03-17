@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, LayoutDashboard, Database, Settings, BookOpen, ClipboardList, FileText } from 'lucide-react';
+import { Activity, LayoutDashboard, Database, LogOut, BookOpen, ClipboardList, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/documents', label: 'Documents', icon: <FileText className="w-5 h-5" /> },
     { href: '/dashboard/analytics', label: 'Analytics', icon: <Activity className="w-5 h-5" /> },
     { href: '/dashboard/data', label: 'Database Logs', icon: <Database className="w-5 h-5" /> },
-    { href: '/', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+    { href: '/login', label: 'Logout', icon: <LogOut className="w-5 h-5" /> },
   ];
 
   return (
@@ -47,7 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="mt-8 p-4 bg-slate-900/50 rounded-2xl border border-slate-800/50 text-xs text-slate-500 text-center">
-          Admin Portal <br /> Version 1.0.0
+          Admin Portal <br /> Version 2.0.0
         </div>
       </aside>
 

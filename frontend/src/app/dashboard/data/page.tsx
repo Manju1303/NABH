@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '@/lib/api';
 import { Database, Trash2, RefreshCw, Download, HardDrive, FileJson } from 'lucide-react';
 
 interface DataRecord {
@@ -25,7 +26,7 @@ export default function DataPage() {
 
   const fetchData = () => {
     setLoading(true);
-    axios.get<{ total: number; records: DataRecord[] }>('http://localhost:8000/api/submissions')
+    axios.get<{ total: number; records: DataRecord[] }>(`${API_BASE_URL}/api/submissions`)
       .then(res => { setRecords(res.data.records); setLoading(false); })
       .catch(() => setLoading(false));
   };
@@ -34,7 +35,7 @@ export default function DataPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:8000/api/submissions/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/submissions/${id}`);
       setRecords(prev => prev.filter(r => r.id !== id));
     } catch {
       alert('Failed to delete record.');
@@ -44,7 +45,7 @@ export default function DataPage() {
   const handleExportCSV = () => {
     if (records.length === 0) return;
     // Download the fully flattened CSV from the backend (all hospital fields + scores)
-    window.open('http://localhost:8000/api/export-csv', '_blank');
+    window.open(`${API_BASE_URL}/api/export-csv`, '_blank');
   };
 
   return (

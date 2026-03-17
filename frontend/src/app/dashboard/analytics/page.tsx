@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '@/lib/api';
 import {
   TrendingUp, TrendingDown, Building2, ShieldCheck, AlertTriangle,
   Activity, Users, HeartPulse, Flame, Trash2, FileCheck, BrainCircuit
@@ -36,7 +37,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get<SubmissionsResponse>('http://localhost:8000/api/submissions')
+    axios.get<SubmissionsResponse>(`${API_BASE_URL}/api/submissions`)
       .then(res => { setData(res.data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);

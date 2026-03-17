@@ -7,8 +7,9 @@ dist/
 build/
 venv/
 .env
+*.env
 
-# Data files (local storage)
+# Data files (local storage — never commit)
 nabh_data.json
 nabh_deadlines.json
 
@@ -31,3 +32,4 @@ desktop.ini
 # Misc
 *.log
 .vercel
+.render

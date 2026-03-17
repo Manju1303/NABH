@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '@/lib/api';
 import {
   Send, CheckCircle, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight,
   Building2, Stethoscope, Users, Award, FileText, Activity, Zap,
@@ -291,14 +292,14 @@ export default function ComplianceForm() {
     };
 
     try {
-      const res = await axios.post('http://localhost:8000/api/submit-form', payload);
+      const res = await axios.post(`${API_BASE_URL}/api/submit-form`, payload);
       setResult(res.data.results);
       setDeficiencies(res.data.deficiencies || []);
       setDefSummary(res.data.deficiency_summary || null);
       setSubmittedId(res.data.results ? null : null);
       // Extract record ID from submissions for deadline setting
       try {
-        const subs = await axios.get('http://localhost:8000/api/submissions');
+        const subs = await axios.get(`${API_BASE_URL}/api/submissions`);
         const latest = subs.data.records[subs.data.records.length - 1];
         if (latest) setSubmittedId(latest.id);
       } catch { /* ignore */ }
@@ -316,7 +317,7 @@ export default function ComplianceForm() {
   const handleSetDeadline = async (defId: string, label: string) => {
     if (!submittedId || !deadlineInputs[defId]) return;
     try {
-      await axios.post(`http://localhost:8000/api/submissions/${submittedId}/set-deadline`, {
+      await axios.post(`${API_BASE_URL}/api/submissions/${submittedId}/set-deadline`, {
         deficiency_id: defId, deadline: deadlineInputs[defId],
         label, note: deadlineNotes[defId] || '',
       });

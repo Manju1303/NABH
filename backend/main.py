@@ -9,7 +9,7 @@ Features:
 """
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from models import NABHEntryLevelForm
 from scoring import calculate_nabh_score
@@ -19,20 +19,26 @@ from datetime import datetime
 from collections import defaultdict
 
 # ═══════════════════════════════════════════
+# ENVIRONMENT
+# ═══════════════════════════════════════════
+
+IS_PRODUCTION = os.getenv("RENDER", "") != ""  # Render sets this automatically
+
+# ═══════════════════════════════════════════
 # APP SETUP
 # ═══════════════════════════════════════════
 
 app = FastAPI(
     title="NABH Compliance Engine API",
     description="Validates hospital data, evaluates NABH entry-level criteria, and tracks deficiencies.",
-    docs_url="/docs",  # Can disable in production: docs_url=None
+    docs_url=None if IS_PRODUCTION else "/docs",  # Disable Swagger in production
     redoc_url=None,
 )
 
-# ── Strict CORS ──
+# ── Strict CORS (reads from env for production) ──
+_default_origins = "http://localhost:3000,http://127.0.0.1:3000"
 ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    o.strip() for o in os.getenv("ALLOWED_ORIGINS", _default_origins).split(",") if o.strip()
 ]
 
 app.add_middleware(
@@ -43,6 +49,17 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
     max_age=3600,  # Cache preflight for 1 hour
 )
+
+
+# ── HTTPS redirect in production ──
+@app.middleware("http")
+async def enforce_https(request: Request, call_next):
+    if IS_PRODUCTION:
+        forwarded_proto = request.headers.get("x-forwarded-proto")
+        if forwarded_proto and forwarded_proto != "https":
+            url = request.url.replace(scheme="https")
+            return RedirectResponse(url=str(url), status_code=301)
+    return await call_next(request)
 
 
 # ═══════════════════════════════════════════
