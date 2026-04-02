@@ -20,33 +20,33 @@ export const BasicInfoStep = ({ data, update }: any) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
       <Inp 
-        label="HOSPITAL_NAME_IDENTIFIER *" 
+        label="Hospital Name *" 
         v={data.hospitalName} 
         set={(v: any) => { update({ hospitalName: v }); markTouched('name'); }} 
         touched={touched.name}
         error={!data.hospitalName ? "Hospital name is mandatory" : ""}
       />
       <Inp 
-        label="NABH_REGISTRATION_ID *" 
+        label="NABH Registration ID *" 
         v={data.regNumber} 
         set={(v: any) => { update({ regNumber: v }); markTouched('reg'); }} 
         touched={touched.reg}
         error={!data.regNumber ? "Valid ID required" : ""}
       />
       <Inp 
-        label="COMMUNICATION_EMAIL *" 
+        label="Email Address *" 
         v={data.email} 
         set={(v: any) => { update({ email: v }); markTouched('email'); }} 
         type="email" 
         touched={touched.email}
-        error={data.email && !validateEmail(data.email) ? "Invalid digital mail format" : !data.email ? "Email is required" : ""}
+        error={data.email && !validateEmail(data.email) ? "Invalid email format" : !data.email ? "Email is required" : ""}
       />
       <Inp 
-        label="TELEMETRIC_PHONE *" 
+        label="Phone Number *" 
         v={data.phone} 
         set={(v: any) => { update({ phone: v }); markTouched('phone'); }} 
         touched={touched.phone}
-        error={data.phone && !validatePhone(data.phone) ? "ERR: Must be exactly 10 digital nodes" : !data.phone ? "Phone link required" : ""}
+        error={data.phone && !validatePhone(data.phone) ? "Must be exactly 10 digits" : !data.phone ? "Phone number required" : ""}
       />
     </div>
   );

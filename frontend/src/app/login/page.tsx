@@ -57,7 +57,7 @@ export default function Login() {
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#BDBDBD' }} />
                   <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                    className="hg-input pl-12" placeholder="admin@nabh.com" />
+                    className="hg-input" style={{ paddingLeft: '44px' }} placeholder="admin@nabh.com" />
                 </div>
               </div>
               <div>
@@ -65,7 +65,7 @@ export default function Login() {
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#BDBDBD' }} />
                   <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                    className="hg-input pl-12" placeholder="Enter password" />
+                    className="hg-input" style={{ paddingLeft: '44px' }} placeholder="Enter password" />
                 </div>
               </div>
               <button type="submit" className="hg-btn-primary w-full py-3 text-base mt-2 flex items-center justify-center gap-2">

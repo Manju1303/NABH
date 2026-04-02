@@ -17,9 +17,10 @@ export const Inp = ({ label, v, set, type = 'text', placeholder = '', error, tou
             className={`w-full bg-slate-900 border-2 rounded-2xl px-5 py-4 text-sm font-bold transition-all outline-none 
                 ${error && touched ? 'border-rose-500 focus:ring-4 focus:ring-rose-500/20' : 'border-white/5 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20'}
                 ${!error && touched && v ? 'border-emerald-500/50' : ''}`}
+            style={touched ? { paddingRight: '48px' } : {}}
         />
         {touched && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                 {error ? <AlertCircle className="w-5 h-5 text-rose-500" /> : v ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : null}
             </div>
         )}
