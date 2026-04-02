@@ -143,6 +143,21 @@ export default function HospitalDashboard() {
                <ShieldCheck className="w-4 h-4 text-emerald-500" />
                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">End-to-End Encrypted</span>
             </div>
+            <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer hover:text-rose-500 transition-colors" onClick={async () => {
+                if(confirm('TOTAL SYSTEM RESET? This will wipe the ENTIRE database and your local data. This cannot be undone.')) {
+                    localStorage.clear();
+                    try {
+                        const res = await fetch('https://nabh-backend.onrender.com/api/system/factory-reset', { method: 'DELETE' });
+                        if(res.ok) alert('System Reset Successful. All data wiped.');
+                        else alert('Remote database reset failed. Please check your internet or contact support.');
+                    } catch(e) {
+                         alert('Remote database reset failed. Local data cleared.');
+                    }
+                    window.location.reload();
+                }
+            }}>
+                Factory Reset System
+            </div>
             <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
                 System Version 4.0.2-Stable
             </div>

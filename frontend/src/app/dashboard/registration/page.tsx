@@ -6,7 +6,7 @@ import API_BASE_URL from '@/lib/api';
 import { 
   CheckCircle, AlertTriangle, FileText, Building2, Activity, Stethoscope, 
   Users, ClipboardList, Zap, HeartPulse, GraduationCap, ShieldCheck, 
-  FlaskConical, Award, Bell, ChevronLeft, ChevronRight, Send, Cpu, LayoutDashboard, Target
+  FlaskConical, Award, Bell, ChevronLeft, ChevronRight, Send, Cpu, LayoutDashboard, Target, RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -204,9 +204,17 @@ export default function ComplianceForm() {
                     </div>
                 </div>
              </div>
-             <div className="hidden sm:block px-6 py-2 bg-white/5 border border-white/10 rounded-2xl">
-                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Ref. ID</p>
-                 <p className="text-xs font-black text-indigo-400">#SH_64218</p>
+             <div className="hidden sm:flex items-center gap-4">
+                 <button 
+                    onClick={() => { if(confirm('WIPE ALL DATA? This will clear your current form.')) { localStorage.removeItem('hg_reg_form'); window.location.reload(); } }}
+                    className="px-6 py-2 bg-rose-500/10 border border-rose-500/30 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2"
+                 >
+                    <RotateCcw className="w-3 h-3" /> RESET MATRIX
+                 </button>
+                 <div className="px-6 py-2 bg-white/5 border border-white/10 rounded-2xl">
+                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Ref. ID</p>
+                     <p className="text-xs font-black text-indigo-400">#SH_64218</p>
+                 </div>
              </div>
         </div>
       </div>
@@ -259,6 +267,15 @@ export default function ComplianceForm() {
                  {/* Main Input Plate */}
                  <div className="bg-slate-900/50 border border-white/5 rounded-2xl sm:rounded-[56px] p-6 sm:p-12 shadow-2xl relative overflow-hidden backdrop-blur-3xl min-h-[400px] sm:min-h-[500px]">
                     <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-white/5">
+                        <button 
+                            onClick={() => { if(confirm('FACTORY RESET? All local checklist and dates will be wiped.')) { localStorage.removeItem('hg_qci_responses'); localStorage.removeItem('hg_qci_dates'); window.location.reload(); } }}
+                            className="hidden sm:flex px-6 py-3.5 bg-rose-500/10 border border-rose-500/30 text-rose-500 rounded-2xl font-black text-[10px] tracking-widest hover:bg-rose-500 hover:text-white transition-all items-center gap-2"
+                        >
+                            <RotateCcw className="w-4 h-4" /> RESET ALL
+                        </button>
+                        <button className="hidden sm:block px-8 py-3.5 bg-cyan-500 text-black rounded-2xl font-black text-sm shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:bg-cyan-400 transition-all hover:scale-105">
+                            SAVE
+                        </button>
                         <div className="p-3 sm:p-4 bg-cyan-500 rounded-xl sm:rounded-2xl shadow-lg shadow-cyan-500/30">
                             <Target className="w-6 h-6 text-black" />
                         </div>

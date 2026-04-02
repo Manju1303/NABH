@@ -195,7 +195,7 @@ export default function NeonQCIInferenceMatrix() {
                                             className={`w-full text-left p-4 rounded-2xl text-[11px] font-bold transition-all flex items-center justify-between group ${isSelected ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' : 'text-slate-500 hover:bg-white/5 hover:text-cyan-400'}`}
                                         >
                                             <span className="truncate">{file.name}</span>
-                                            <span className={`text-[9px] tabular-nums font-black ${isSelected ? 'text-black/60' : 'text-slate-800'}`}>{fileAns}/5</span>
+                                            <span className={`text-[9px] tabular-nums font-black ${isSelected ? 'text-black/60' : 'text-slate-800'}`}>{fileAns}/{file.questions.length}</span>
                                         </button>
                                     );
                                 })}
