@@ -20,7 +20,7 @@ app = FastAPI(
 )
 
 # ── CORS ──
-_default_origins = "http://localhost:3000,http://127.0.0.1:3000"
+_default_origins = "http://localhost:3000,http://127.0.0.1:3000,*"
 ALLOWED_ORIGINS = [
     o.strip() for o in os.getenv("ALLOWED_ORIGINS", _default_origins).split(",") if o.strip()
 ]
