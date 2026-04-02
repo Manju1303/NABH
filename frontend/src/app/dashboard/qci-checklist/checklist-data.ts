@@ -22,6 +22,9 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'q1_3', text: 'Is the registration copy displayed prominently at the reception area?', importance: 1 },
     { id: 'q1_4', text: 'Does the registration cover the exact bed strength of the hospital?', importance: 1 },
     { id: 'q1_5', text: 'Is the validity date clearly visible and not expired?', importance: 1, hasValidity: true },
+    { id: 'q1_6', text: 'Are all services mentioned in the scope actually covered by the registration?', importance: 1 },
+    { id: 'q1_7', text: 'Has the hospital applied for renewal 3-6 months before expiry?', importance: 1 },
+    { id: 'q1_8', text: 'Is the registration signed by the authorized competent authority?', importance: 1 },
   ], evidence_needed: 'Current Clinical Establishment Registration Certificate' },
 
   { id: 'f2', code: 'STAT-01', name: 'Fire NOC', category: 'STAT', questions: [
@@ -30,6 +33,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'q2_3', text: 'Is fire safety training provided periodically to all staff?', importance: 1 },
     { id: 'q2_4', text: 'Is a fire exit map displayed on every floor of the building?', importance: 1 },
     { id: 'q2_5', text: 'Is a functional fire alarm system installed and regularly tested?', importance: 1 },
+    { id: 'q2_6', text: 'Are fire exits kept clear of obstructions at all times?', importance: 1 },
+    { id: 'q2_7', text: 'Does the hospital conduct fire mock drills every 6 months?', importance: 1 },
+    { id: 'q2_8', text: 'Are staff trained in using different types of fire extinguishers?', importance: 1 },
+    { id: 'q2_9', text: 'Are there luminous "Exit" signs in all corridors and stairways?', importance: 1 },
+    { id: 'q2_10', text: 'Is the fire hydrant system and water tank dedicated for fire accessible?', importance: 1 },
   ], evidence_needed: 'No Objection Certificate from Fire Department' },
 
   { id: 'f3', code: 'STAT-02', name: 'BMW Authorization', category: 'STAT', questions: [
@@ -38,6 +46,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'q3_3', text: 'Is renewal of authorization applied for before the expiry date?', importance: 1 },
     { id: 'q3_4', text: 'Is a copy of the BMW authorization displayed at the waste storage area?', importance: 1 },
     { id: 'q3_5', text: 'Does the authorization cover all applicable BMW categories?', importance: 1 },
+    { id: 'q3_6', text: 'Is there a valid MOU with the Common BMW Treatment Facility (CBWTF)?', importance: 1, hasValidity: true },
+    { id: 'q3_7', text: 'Are BMW registers (Form IV) updated daily with weight records?', importance: 1 },
+    { id: 'q3_8', text: 'Is annual report submitted to SPCB before June 30th every year?', importance: 1 },
+    { id: 'q3_9', text: 'Are all staff immunized against Hepatitis B and Tetanus?', importance: 1 },
+    { id: 'q3_10', text: 'Is there a designated and secure central BMW storage area?', importance: 1 },
   ], evidence_needed: 'State Pollution Control Board BMW Authorization' },
 
   // ── GENERAL MANAGEMENT (GEN) ────────────────────────────────────────────
@@ -64,14 +77,24 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c13_q3', text: 'Are patient rights and responsibilities displayed bilingually in OPD areas?', importance: 1 },
     { id: 'f_c13_q4', text: 'Are hand washing areas easily accessible with steps of hand hygiene displayed?', importance: 1 },
     { id: 'f_c13_q5', text: 'Are BMW bins available as per rules and prescription audit conducted regularly?', importance: 1 },
+    { id: 'f_c13_q6', text: 'Is the outpatient clinic area well-ventilated and naturally/mechanically lit?', importance: 1 },
+    { id: 'f_c13_q7', text: 'Is there a documented policy for handling medical emergencies in the OPD?', importance: 1 },
+    { id: 'f_c13_q8', text: 'Are weighing scales and BP apparatuses calibrated and documentation maintained?', importance: 1 },
+    { id: 'f_c13_q9', text: 'Is patient confidentiality maintained during physical examination in OPD?', importance: 1 },
+    { id: 'f_c13_q10', text: 'Are referral/transfer protocols documented for OPD patients needing admission?', importance: 1 },
   ], evidence_needed: 'OPD Registration Records, UHID System, OPD Assessment Forms' },
 
   { id: 'f_c12', code: 'CHECK-04.9', name: 'Laboratory', category: 'AAC', questions: [
-    { id: 'f_c12_q1', text: 'Is the scope of laboratory services commensurate with clinical services provided?', importance: 1 },
-    { id: 'f_c12_q2', text: 'Are samples collected, labelled and transported in shake/spill-proof containers with biohazard logo?', importance: 1 },
-    { id: 'f_c12_q3', text: 'Are critical laboratory values defined and immediately reported to the concerned clinician?', importance: 1 },
-    { id: 'f_c12_q4', text: 'Is turn-around time (TAT) for lab tests defined, monitored and records maintained?', importance: 1 },
-    { id: 'f_c12_q5', text: 'Are laboratory staff provided with PPEs, eyewash facility, spill kits and trained in safe practices?', importance: 1 },
+    { id: 'q12_1', text: 'Is the scope of laboratory services commensurate with clinical services provided?', importance: 1 },
+    { id: 'q12_2', text: 'Are samples collected, labelled and transported in shake/spill-proof containers with biohazard logo?', importance: 1 },
+    { id: 'q12_3', text: 'Are critical laboratory values defined and immediately reported to the concerned clinician?', importance: 1 },
+    { id: 'q12_4', text: 'Is turn-around time (TAT) for lab tests defined, monitored and records maintained?', importance: 1 },
+    { id: 'q12_5', text: 'Are laboratory staff provided with PPEs, eyewash facility, spill kits and trained in safe practices?', importance: 1 },
+    { id: 'q12_6', text: 'Is there a documented policy for outsourced laboratory services including quality assurance?', importance: 1 },
+    { id: 'q12_7', text: 'Are Internal Quality Control (IQC) results updated daily and reviewed by pathlogist?', importance: 1 },
+    { id: 'q12_8', text: 'Is the lab participating in External Quality Assurance Scheme (EQAS)?', importance: 1 },
+    { id: 'q12_9', text: 'Are reagents and kits stored at appropriate temperatures with monitoring logs?', importance: 1 },
+    { id: 'q12_10', text: 'Is safe disposal of infectious waste (autoclaving/chemical) done within the lab?', importance: 1 },
   ], evidence_needed: 'Lab Scope Document, Critical Value Register, Sample Handling SOP, TAT Records' },
 
   { id: 'f_c10', code: 'CHECK-04.7', name: 'Radiology', category: 'AAC', questions: [
@@ -97,6 +120,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c04_q3', text: 'Is a crash cart placed at an immediately accessible location and medicines checked daily with records?', importance: 1 },
     { id: 'f_c04_q4', text: 'Are Code Blue policy, BLS/ACLS protocols displayed and all ED staff trained?', importance: 1 },
     { id: 'f_c04_q5', text: 'Is triaging of patients done and MLC/brought-in-dead handling protocol documented?', importance: 1 },
+    { id: 'f_c04_q6', text: 'Are oxygen and suction points available for every emergency bed?', importance: 1 },
+    { id: 'f_c04_q7', text: 'Is the emergency duty roster for doctors and nursing staff displayed?', importance: 1 },
+    { id: 'f_c04_q8', text: 'Are life-saving equipments (Defibrillator/Ventilator) checked and kept in "Ready-to-use" mode?', importance: 1 },
+    { id: 'f_c04_q9', text: 'Is there a documented protocol for handling "Disaster/Mass Casualties"?', importance: 1 },
+    { id: 'f_c04_q10', text: 'Is the time to initial assessment for emergency patients monitored and within 10 minutes?', importance: 1 },
   ], evidence_needed: 'ED Layout Plan, Emergency Drug List, Code Blue SOP, Triage Protocol' },
 
   { id: 'f_c05', code: 'CHECK-04.2', name: 'Ambulance', category: 'COP', questions: [
@@ -113,6 +141,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c06_q3', text: 'Is informed consent for anesthesia and surgery obtained before every procedure?', importance: 1 },
     { id: 'f_c06_q4', text: 'Is the WHO Surgical Safety Checklist followed and documented in every patient file?', importance: 1 },
     { id: 'f_c06_q5', text: 'Are OT air/surface culture tests done regularly and Aldrete scoring for recovery documented?', importance: 1 },
+    { id: 'f_c06_q6', text: 'Is there a dedicated recovery room with monitoring equipment (O2, Suction, BPM)?', importance: 1 },
+    { id: 'f_c06_q7', text: 'Are documented policies for zoning (unrestricted, semi-restricted, restricted) in place?', importance: 1 },
+    { id: 'f_c06_q8', text: 'Are surgical counts (gauze, instruments) performed and documented in every case?', importance: 1 },
+    { id: 'f_c06_q9', text: 'Is the OT register maintained with details of surgery, surgeons and anesthesia?', importance: 1 },
+    { id: 'f_c06_q10', text: 'Is the scavenging system for anesthetic gases functional and tested?', importance: 1 },
   ], evidence_needed: 'OT Culture Reports, Surgical Safety Checklist, Anesthesia Records, Consent Forms' },
 
   { id: 'f_c07', code: 'CHECK-04.4', name: 'ICU & High Dependency Unit', category: 'COP', questions: [
@@ -145,6 +178,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c11_q3', text: 'Is adequate monitoring equipment and rescue manpower available during sedation?', importance: 1 },
     { id: 'f_c11_q4', text: 'Is medication management adhered to and crash cart present and regularly checked?', importance: 1 },
     { id: 'f_c11_q5', text: 'Is the reuse policy for endoscopes documented and high-level disinfection protocol followed?', importance: 1 },
+    { id: 'f_c11_q6', text: 'Are endoscope cleaning/soaking times monitored and recorded in a logbook?', importance: 1 },
+    { id: 'f_c11_q7', text: 'Is there a dedicated recovery area for patients post-sedation?', importance: 1 },
+    { id: 'f_c11_q8', text: 'Are discharge criteria (e.g. Aldrete score) used before sending patients home?', importance: 1 },
+    { id: 'f_c11_q9', text: 'Are endoscopes stored vertically in a well-ventilated cabinet?', importance: 1 },
+    { id: 'f_c11_q10', text: 'Is biopsy forcep sterilization (autoclaving) verified for each use?', importance: 1 },
   ], evidence_needed: 'Sedation Protocol, Reuse Policy, Crash Cart Checklist, Consent Forms' },
 
   { id: 'f_c16', code: 'CHECK-04.13', name: 'CSSD', category: 'COP', questions: [
@@ -153,6 +191,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c16_q3', text: 'Is regular sterilization validation (chemical indicator) conducted and documented?', importance: 1 },
     { id: 'f_c16_q4', text: 'Is shelf life of sterile sets adhered to and documented in OT and CSSD?', importance: 1 },
     { id: 'f_c16_q5', text: 'Is a recall procedure in place when a sterilization system breakdown occurs?', importance: 1 },
+    { id: 'f_c16_q6', text: 'Are biological indicators (spore tests) used weekly to validate sterilizer efficacy?', importance: 1 },
+    { id: 'f_c16_q7', text: 'Is the CSSD environment monitored for temperature and humidity?', importance: 1 },
+    { id: 'f_c16_q8', text: 'Are staff provided with heavy-duty gloves and aprons for the cleaning area?', importance: 1 },
+    { id: 'f_c16_q9', text: 'Is there a unique batch numbering system for every sterilization cycle?', importance: 1 },
+    { id: 'f_c16_q10', text: 'Are the Bowie-Dick tests (if using vacuum sterilizers) performed daily?', importance: 1 },
   ], evidence_needed: 'Sterilization Validation Records, CSSD Layout Plan, Recall SOP' },
 
   // ── MEDICATION MANAGEMENT (MOM) ──────────────────────────────────────────
@@ -162,6 +205,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c14_q3', text: 'Are LASA (look-alike sound-alike) medicines stored separately with a defined published list?', importance: 1 },
     { id: 'f_c14_q4', text: 'Are high-risk medications identified, stored separately and dispensed with double verification?', importance: 1 },
     { id: 'f_c14_q5', text: 'Are adverse drug events defined, monitored, reported and reviewed by the Pharmacy & Therapeutic Committee?', importance: 1 },
+    { id: 'f_c14_q6', text: 'Are emergency medicines (Crash Cart) checked daily for expiry and stock maintenance?', importance: 1 },
+    { id: 'f_c14_q7', text: 'Is the drug formulary updated annually and available to all clinicians and nurses?', importance: 1 },
+    { id: 'f_c14_q8', text: 'Are refrigerator temperatures monitored twice daily for cold-chain medications?', importance: 1 },
+    { id: 'f_c14_q9', text: 'Is there a policy for management of Verbal Orders and Telephone Orders?', importance: 1 },
+    { id: 'f_c14_q10', text: 'Are expiry dates checked monthly for all pharmacy and ward stocks?', importance: 1 },
   ], evidence_needed: 'Drug Formulary, LASA List, Narcotic Register, Drug Retail License (Form 20 & 21)' },
 
   // ── INFECTION CONTROL (HIC) ───────────────────────────────────────────────
@@ -171,6 +219,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c15_q3', text: 'Is pre-exposure (Hep-B, Typhoid) and post-exposure prophylaxis offered to all relevant staff?', importance: 1 },
     { id: 'f_c15_q4', text: 'Is surveillance for VAP, CLABSI, CAUTI and SSI carried out using standard WHO/CDC definitions?', importance: 1 },
     { id: 'f_c15_q5', text: 'Is air surveillance (OT cultures, HEPA checks) and surface surveillance (swab cultures) done regularly?', importance: 1 },
+    { id: 'f_c15_q6', text: 'Is the hospital cleaning schedule (floors, walls, high-touch areas) followed and documented?', importance: 1 },
+    { id: 'f_c15_q7', text: 'Is biomedical waste segregated at source in colour-coded bags with stickers?', importance: 1 },
+    { id: 'f_c15_q8', text: 'Are disinfectant concentrations (e.g. Sodium Hypochlorite) tested and documented daily?', importance: 1 },
+    { id: 'f_c15_q9', text: 'Is there a policy for management of needle-stick injuries and blood spills?', importance: 1 },
+    { id: 'f_c15_q10', text: 'Is the antibiotic policy defined and followed for surgical prophylaxis?', importance: 1 },
   ], evidence_needed: 'IC Manual, Hand Hygiene Audit Reports, Air & Surface Culture Records, HAI Surveillance Data' },
 
   { id: 'f_c22', code: 'CHECK-04.19', name: 'Housekeeping, Laundry & Kitchen', category: 'HIC', questions: [
@@ -221,6 +274,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c21_q3', text: 'Are medical gas pipelines uniformly colour-coded with daily/monthly maintenance schedules maintained?', importance: 1 },
     { id: 'f_c21_q4', text: 'Are records of medical gas outlet pressure checks and leak detection maintained?', importance: 1 },
     { id: 'f_c21_q5', text: 'Are empty and filled gas cylinders stored separately with secure chaining and loading records?', importance: 1 },
+    { id: 'f_c21_q6', text: 'Is water quality testing (chemical and microbiological) done every 6 months?', importance: 1 },
+    { id: 'f_c21_q7', text: 'Are electrical panels accessible only to authorized persons and rubber mats provided?', importance: 1 },
+    { id: 'f_c21_q8', text: 'Is the UPS system tested for battery backup and maintenance records available?', importance: 1 },
+    { id: 'f_c21_q9', text: 'Are boiler/autoclave fitness certificates available (if applicable)?', importance: 1, hasValidity: true },
+    { id: 'f_c21_q10', text: 'Is the central manifold area well-ventilated and fire safe?', importance: 1 },
   ], evidence_needed: 'Water Testing Reports, Generator Test Logs, Medical Gas Maintenance Records' },
 
   // ── HR MANAGEMENT (HRM) ───────────────────────────────────────────────────
@@ -238,6 +296,11 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c25_q3', text: 'Are personal files maintained for all employees with qualification, health status and disciplinary records?', importance: 1 },
     { id: 'f_c25_q4', text: 'Are documents maintained for pre-exposure prophylaxis, post-exposure prophylaxis and ESI/insurance coverage?', importance: 1 },
     { id: 'f_c25_q5', text: 'Is an annual audit of training conducted including staff interviews to verify awareness?', importance: 1 },
+    { id: 'f_c25_q6', text: 'Are medical staff (doctors/nurses) registered with their respective state councils?', importance: 1 },
+    { id: 'f_c25_q7', text: 'Are job descriptions and performance appraisals signed and filed in personal files?', importance: 1 },
+    { id: 'f_c25_q8', text: 'Is there a policy for credentialing and privileging of medical and nursing staff?', importance: 1 },
+    { id: 'f_c25_q9', text: 'Are child abduction prevention protocols part of the staff training program?', importance: 1 },
+    { id: 'f_c25_q10', text: 'Is fire safety training mandatory for all staff every 6 months?', importance: 1 },
   ], evidence_needed: 'Personal Files, Induction Records, Grievance Register, Health Benefit Policy' },
 
   // ── INFORMATION MANAGEMENT (IMS) ──────────────────────────────────────────
@@ -247,5 +310,10 @@ export const CHECKLIST_FILES: ChecklistFile[] = [
     { id: 'f_c18_q3', text: 'Is confidentiality, security and integrity of medical records maintained against loss, theft and tampering?', importance: 1 },
     { id: 'f_c18_q4', text: 'Are SOPs available for retention period, access control and destruction of medical records?', importance: 1 },
     { id: 'f_c18_q5', text: 'Is a medical record audit and mock drill conducted at least twice a year?', importance: 1 },
+    { id: 'f_c18_q6', text: 'Are records stored in a fire-safe environment with pest control measures?', importance: 1 },
+    { id: 'f_c18_q7', text: 'Is there a tracking system for out-borrowed medical records?', importance: 1 },
+    { id: 'f_c18_q8', text: 'Are standard medical abbreviations used in all clinical documentations?', importance: 1 },
+    { id: 'f_c18_q9', text: 'Is the "Discharge Summary" given to the patient at the time of discharge?', importance: 1 },
+    { id: 'f_c18_q10', text: 'Is mortality review conducted and findings documented in the patient record?', importance: 1 },
   ], evidence_needed: 'Medical Record Policy, Retention SOP, MRD Audit Reports, Destruction Records' },
 ];
