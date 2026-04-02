@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: nabh-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn -k uvicorn.workers.UvicornWorker main:app --chdir backend
+    plan: starter # Persistence requires a paid plan
+    envVars:
+      - key: DB_PATH
+        value: /data/nabh.db
+      - key: ALLOWED_ORIGINS
+        sync: false # Set this to your Vercel URL in the Render dashboard
+    disk:
+      name: nabh-data
+      mountPath: /data
+      sizeGB: 1
