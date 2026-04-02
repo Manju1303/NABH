@@ -40,6 +40,17 @@ app.include_router(deadlines.router)
 app.include_router(schedule.router)
 app.include_router(committee.router)
 
+# ── NUCLEAR RESET (Temporary) ──
+@app.delete("/api/system/factory-reset")
+async def factory_reset(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import text
+    await db.execute(text("DELETE FROM hospital_submissions"))
+    await db.execute(text("DELETE FROM remarks"))
+    await db.execute(text("DELETE FROM schedule"))
+    await db.execute(text("DELETE FROM committee_records"))
+    await db.commit()
+    return {"message": "System Reset Successful - All data wiped."}
+
 @app.on_event("startup")
 async def startup():
     await init_db()
