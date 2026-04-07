@@ -5,6 +5,7 @@ NABH Compliance Engine API v3.0 — Refactored & Enhanced
 from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
 import os, time
 
 from database import init_db, get_db

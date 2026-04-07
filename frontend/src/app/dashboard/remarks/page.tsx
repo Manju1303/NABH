@@ -118,17 +118,17 @@ export default function RemarksPage() {
       <div className="hg-card p-4 mb-5 border-l-4" style={{ borderColor: '#00F2FF' }}>
         <p className="text-xs mb-3 font-medium uppercase tracking-wider text-slate-500">Enter Registration Number to view remarks</p>
         <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
             <input 
               type="text" 
               value={regNumber}
               onChange={e => setRegNumber(e.target.value)}
               placeholder="HOSP-REG-123..."
-              className="hg-input pl-10 h-[40px]"
+              className="hg-input pl-12 h-[48px] text-sm font-bold"
             />
           </div>
-          <button onClick={handleSearch} disabled={loading} className="hg-btn-primary px-6 h-[40px]">
+          <button onClick={handleSearch} disabled={loading} className="hg-btn-primary px-6 h-[48px]">
             {loading ? 'Searching...' : 'Find Hospital'}
           </button>
         </div>
@@ -152,7 +152,7 @@ export default function RemarksPage() {
       )}
 
       {/* Add remark */}
-      <div className={`hg-card p-4 mb-5 ${!record ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`hg-card p-4 mb-5 ${!record ? 'opacity-70 pointer-events-none' : ''}`}>
         <div className="flex gap-3">
           <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center" style={{ background: 'rgba(0,242,255,0.1)' }}>
             <User className="w-4 h-4" style={{ color: '#00F2FF' }} />
@@ -161,17 +161,17 @@ export default function RemarksPage() {
             <textarea
               value={newRemark}
               onChange={e => setNewRemark(e.target.value)}
-              rows={2}
-              placeholder={record ? "Add a response or clarification..." : "Please find a hospital first..."}
-              className="hg-input resize-none"
+              rows={3}
+              placeholder={record ? "Add a response or clarification..." : "Please lookup your hospital first to enable remarks..."}
+              className={`hg-input resize-none p-4 ${!record ? 'opacity-60' : ''}`}
             />
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-end mt-3">
               <button 
                 onClick={handleAddRemark} 
                 disabled={!newRemark.trim() || !record || loading} 
-                className="hg-btn-primary flex items-center gap-2 text-sm disabled:opacity-40"
+                className="hg-btn-primary flex items-center gap-2.5 text-xs px-6 py-3 disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <Send className="w-3.5 h-3.5" /> Submit Response
+                <Send className="w-4 h-4" /> SUBMIT RESPONSE
               </button>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function RemarksPage() {
         {record && remarks.length === 0 && (
           <div className="text-center py-10">
             <p className="text-sm text-slate-500 italic">No formal remarks or observations have been recorded yet.</p>
-</div>
+          </div>
         )}
 
         {remarks.slice().reverse().map(remark => (

@@ -123,18 +123,24 @@ body {
   padding-left: 16px;
   padding-right: 16px;
   box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   font-size: 14px;
   color: #F8FAFC;
-  background: rgba(15, 23, 42, 0.8);
-  transition: all 0.2s;
+  background: rgba(15, 23, 42, 0.7);
+  transition: all 0.3s ease;
+}
+
+.hg-input::placeholder {
+  color: #64748B;
+  font-weight: 500;
 }
 
 .hg-input:focus {
   outline: none;
   border-color: #00F2FF;
-  box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.1), 0 0 20px rgba(0, 242, 255, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 242, 255, 0.2), 0 0 20px rgba(0, 242, 255, 0.08);
 }
 
 /* Scrollbar */
