@@ -179,11 +179,11 @@ export default function ComplianceForm() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-32">
+    <div className="max-w-6xl mx-auto pb-32 animate-in fade-in duration-700">
       {/* Neon Breadcrumb */}
-      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-700 px-4 sm:p-6">
+      <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 px-4 sm:p-6 mb-2">
         <Link href="/dashboard" className="hover:text-cyan-400 transition-colors">Home</Link> 
-        <span>/</span> 
+        <span className="text-slate-800">/</span> 
         <span className="text-cyan-400">Registration</span>
       </div>
 
@@ -191,16 +191,16 @@ export default function ComplianceForm() {
       <div className="p-5 sm:p-8 bg-slate-900 border border-white/5 rounded-2xl sm:rounded-[40px] shadow-2xl mb-6 sm:mb-12 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent"></div>
         <div className="relative z-10">
-            <h1 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tighter mb-1">Registration</h1>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Protocol: <span className="text-cyan-400">NABH Pre-Entry Level</span></p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white uppercase tracking-tight mb-1">Registration</h1>
+            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Protocol: <span className="text-cyan-400">NABH Pre-Entry Level</span></p>
         </div>
         <div className="relative z-10 flex items-center gap-10">
              <div className="text-right">
-                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Sync Progress</p>
+                <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mb-1">Sync Progress</p>
                 <div className="flex items-center gap-3">
-                    <span className="text-2xl font-black text-cyan-400">{sectionProgress}%</span>
-                    <div className="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(0,242,255,0.5)] transition-all duration-700" style={{ width: `${sectionProgress}%` }}></div>
+                    <span className="text-xl font-bold text-cyan-400">{sectionProgress}%</span>
+                    <div className="w-24 sm:w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-500 transition-all duration-700" style={{ width: `${sectionProgress}%`, boxShadow: '0 0 10px rgba(0, 242, 255, 0.3)' }}></div>
                     </div>
                 </div>
              </div>
@@ -229,10 +229,10 @@ export default function ComplianceForm() {
                         onClick={() => setStep(i)} 
                         className={`flex-shrink-0 lg:w-full text-left p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all flex items-center gap-3 sm:gap-4 border ${i === step ? 'bg-cyan-500 border-cyan-500 text-black shadow-lg shadow-cyan-500/20' : i < step ? 'bg-white/5 border-emerald-500/30 text-emerald-500 opacity-60' : 'bg-transparent border-white/5 text-slate-500 hover:bg-white/5'}`}
                     >
-                        <div className={`p-2 rounded-lg ${i === step ? 'bg-black/10' : 'bg-white/5'}`}>
-                            {i < step ? <CheckCircle className="w-4 h-4" /> : s.icon}
+                        <div className={`p-1.5 rounded-lg ${i === step ? 'bg-black/10' : 'bg-white/5'}`}>
+                            {i < step ? <CheckCircle className="w-3.5 h-3.5" /> : s.icon}
                         </div>
-                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest truncate whitespace-nowrap">{s.label}</span>
+                        <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest truncate">{s.label}</span>
                     </button>
                 ))}
                 </div>
@@ -280,8 +280,8 @@ export default function ComplianceForm() {
                             <Target className="w-6 h-6 text-black" />
                         </div>
                         <div>
-                            <h3 className="text-lg sm:text-2xl font-black text-white uppercase tracking-tighter">SECTION: {STEPS[step].label}</h3>
-                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Step {step + 1} of {STEPS.length}</p>
+                            <h3 className="text-base sm:text-xl font-bold text-white uppercase tracking-tight">SECTION: {STEPS[step].label}</h3>
+                            <p className="text-[8px] font-medium text-slate-600 uppercase tracking-[0.2em]">Step {step + 1} of {STEPS.length}</p>
                         </div>
                     </div>
 

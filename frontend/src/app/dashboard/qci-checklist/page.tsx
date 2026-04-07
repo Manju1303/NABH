@@ -125,9 +125,9 @@ export default function NeonQCIInferenceMatrix() {
                 </Link>
                 <div className="h-10 w-px bg-white/5 hidden sm:block"></div>
                 <div>
-                     <h1 className="text-base sm:text-2xl font-black tracking-tight text-white flex items-center gap-2 sm:gap-3">
-                        <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 animate-pulse" />
-                        <span className="hidden sm:inline">HEALTHGUARD</span> <span className="text-cyan-400 text-glow-cyan">AI</span>
+                     <h1 className="text-sm sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 sm:gap-3">
+                        <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-pulse" />
+                        <span className="hidden sm:inline">HEALTHGUARD</span> <span className="text-cyan-400">AI</span>
                      </h1>
                      <div className="hidden sm:flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-cyan-400 glow-cyan"></div>
@@ -138,10 +138,10 @@ export default function NeonQCIInferenceMatrix() {
 
             <div className="flex items-center gap-4 sm:gap-10">
                  <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1 hidden sm:block">Compliance Score</p>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 hidden sm:block">Compliance Score</p>
                     <div className="flex items-center gap-2 sm:gap-4">
-                        <span className="text-xl sm:text-3xl font-black tabular-nums tracking-tighter" style={{ color: stats.color, textShadow: `0 0 15px ${stats.color}50` }}>{Math.round(stats.score)}%</span>
-                        <div className="hidden sm:block px-3 py-1 rounded-lg text-[9px] font-black border text-white animate-pulse" style={{ backgroundColor: `${stats.color}20`, borderColor: stats.color }}>
+                        <span className="text-lg sm:text-2xl font-bold tabular-nums tracking-tighter" style={{ color: stats.color }}>{Math.round(stats.score)}%</span>
+                        <div className="hidden sm:block px-2 py-0.5 rounded text-[8px] font-bold border text-white" style={{ backgroundColor: `${stats.color}20`, borderColor: stats.color }}>
                             {stats.status}
                         </div>
                     </div>
@@ -192,10 +192,10 @@ export default function NeonQCIInferenceMatrix() {
                                         <button 
                                             key={file.id}
                                             onClick={() => setSelectedFileId(file.id)}
-                                            className={`w-full text-left p-4 rounded-2xl text-[11px] font-bold transition-all flex items-center justify-between group ${isSelected ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' : 'text-slate-500 hover:bg-white/5 hover:text-cyan-400'}`}
+                                            className={`w-full text-left p-3.5 rounded-xl text-[10px] font-bold transition-all flex items-center justify-between group ${isSelected ? 'bg-cyan-500 text-black' : 'text-slate-400 hover:bg-white/5 hover:text-cyan-400'}`}
                                         >
-                                            <span className="truncate">{file.name}</span>
-                                            <span className={`text-[9px] tabular-nums font-black ${isSelected ? 'text-black/60' : 'text-slate-800'}`}>{fileAns}/{file.questions.length}</span>
+                                            <span className="truncate pr-2">{file.name}</span>
+                                            <span className={`text-[8px] tabular-nums font-bold shrink-0 ${isSelected ? 'text-black/60' : 'text-slate-600'}`}>{fileAns}/{file.questions.length}</span>
                                         </button>
                                     );
                                 })}
@@ -222,12 +222,12 @@ export default function NeonQCIInferenceMatrix() {
                                 Sector: {currentFile.category}
                              </div>
                         </div>
-                        <h2 className="text-2xl sm:text-4xl lg:text-6xl font-black text-white tracking-tight leading-[0.9] mb-6 sm:mb-8 uppercase text-glow-cyan">{currentFile.name}</h2>
-                        <div className="inline-flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl backdrop-blur-md">
-                            <FileSearch className="w-6 h-6 text-cyan-400" />
+                        <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-4 uppercase">{currentFile.name}</h2>
+                        <div className="inline-flex items-center gap-3 sm:gap-4 p-4 sm:p-5 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl backdrop-blur-md">
+                            <FileSearch className="w-5 h-5 text-cyan-400" />
                             <div>
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Mandatory Artifact Required</p>
-                                <p className="text-sm sm:text-lg font-black text-white tracking-tight">{currentFile.evidence_needed}</p>
+                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Mandatory Artifact Required</p>
+                                <p className="text-xs sm:text-base font-bold text-white tracking-tight">{currentFile.evidence_needed}</p>
                             </div>
                         </div>
                      </div>
@@ -238,11 +238,11 @@ export default function NeonQCIInferenceMatrix() {
                                 <div className="absolute top-0 left-0 w-2 h-full bg-cyan-500/0 group-hover/card:bg-cyan-500/100 transition-all"></div>
                                 <div className="flex flex-col sm:flex-row items-start justify-between gap-6 sm:gap-12 relative z-10">
                                     <div className="flex gap-4 sm:gap-10">
-                                        <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover/card:border-cyan-500/30 transition-all">
-                                            <span className="text-lg sm:text-3xl font-black text-slate-800 group-hover/card:text-cyan-900 transition-all">{idx + 1}</span>
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover/card:border-cyan-500/30 transition-all">
+                                            <span className="text-base sm:text-xl font-bold text-slate-700 group-hover/card:text-cyan-600 transition-all">{idx + 1}</span>
                                         </div>
                                         <div>
-                                            <p className="text-base sm:text-xl lg:text-3xl font-black text-white leading-tight mb-4 tracking-tight group-hover/card:text-cyan-50 text-glow-cyan transition-colors">{q.text}</p>
+                                            <p className="text-sm sm:text-lg lg:text-xl font-bold text-white leading-snug mb-3 tracking-tight group-hover/card:text-cyan-200 transition-colors">{q.text}</p>
                                             
                                             {q.hasValidity && responses[q.id] === 1 && (() => {
                                                 const today = new Date().toISOString().split('T')[0];
@@ -266,7 +266,7 @@ export default function NeonQCIInferenceMatrix() {
                                                     {isMissing && <p className="text-sm font-bold mb-4 opacity-80">A valid future expiry date is required. Without it, this question scores 0 in the final analysis.</p>}
                                                     <input
                                                       type="date"
-                                                      className="w-full bg-black/10 border-2 border-black/20 rounded-xl sm:rounded-[28px] px-4 sm:px-8 py-3 sm:py-5 text-base sm:text-2xl font-black focus:ring-0 focus:border-black/50 transition-all"
+                                                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-1 focus:ring-cyan-500 outline-none transition-all"
                                                       value={dateVal}
                                                       onChange={(e) => setValidityDates(p => ({ ...p, [q.id]: e.target.value }))}
                                                     />
@@ -275,16 +275,16 @@ export default function NeonQCIInferenceMatrix() {
                                               })()}
                                         </div>
                                     </div>
-                                    <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 shrink-0 w-full sm:w-auto">
+                                    <div className="flex flex-row sm:flex-col gap-2 sm:gap-2.5 shrink-0 w-full sm:w-auto">
                                         <button 
                                             onClick={() => setResponses(p => ({ ...p, [q.id]: p[q.id] === 1 ? null : 1 }))}
-                                            className={`flex-1 sm:w-44 py-3 sm:py-5 rounded-xl sm:rounded-[28px] text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all border-2 ${responses[q.id] === 1 ? 'bg-cyan-500 text-black border-cyan-500 shadow-[0_0_30px_rgba(0,242,255,0.4)] scale-105' : 'bg-transparent text-slate-700 border-white/5 hover:border-cyan-500 hover:text-cyan-400'}`}
+                                            className={`flex-1 sm:w-36 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.2em] transition-all border ${responses[q.id] === 1 ? 'bg-cyan-500 text-black border-cyan-500' : 'bg-transparent text-slate-600 border-white/10 hover:border-cyan-500 hover:text-cyan-400'}`}
                                         >
                                             COMPLIANT
                                         </button>
                                         <button 
                                             onClick={() => setResponses(p => ({ ...p, [q.id]: p[q.id] === 0 ? null : 0 }))}
-                                            className={`flex-1 sm:w-44 py-3 sm:py-5 rounded-xl sm:rounded-[28px] text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all border-2 ${responses[q.id] === 0 ? 'bg-[#FF00E5] text-white border-[#FF00E5] shadow-[0_0_30px_rgba(255,0,229,0.4)] scale-105' : 'bg-transparent text-slate-700 border-white/5 hover:border-[#FF00E5] hover:text-[#FF00E5]'}`}
+                                            className={`flex-1 sm:w-36 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.2em] transition-all border ${responses[q.id] === 0 ? 'bg-[#FF00E5] text-white border-[#FF00E5]' : 'bg-transparent text-slate-600 border-white/10 hover:border-[#FF00E5] hover:text-[#FF00E5]'}`}
                                         >
                                             DEFICIENCY
                                         </button>
@@ -298,12 +298,12 @@ export default function NeonQCIInferenceMatrix() {
                      <div className="mt-12 sm:mt-24 p-8 sm:p-16 bg-[#020617] rounded-3xl sm:rounded-[64px] border border-cyan-500/20 shadow-[0_0_100px_rgba(0,242,255,0.1)] relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500 blur-[180px] opacity-10"></div>
                         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8 sm:gap-12">
-                             <div className="space-y-4 sm:space-y-6 max-w-xl">
-                                <div className="p-4 sm:p-5 bg-cyan-500/10 rounded-2xl sm:rounded-3xl w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center border border-cyan-500/30">
-                                    <BrainCircuit className="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400" />
-                                </div>
-                                <h3 className="text-xl sm:text-4xl font-black text-white uppercase tracking-tighter">GENERATE AUDIT REPORT</h3>
-                                <p className="text-slate-400 font-medium text-sm sm:text-lg leading-relaxed">Run a full predictive assessment of your hospital\'s compliance readiness.</p>
+                             <div className="space-y-4 sm:space-y-6">
+                                 <div className="p-3 sm:p-4 bg-cyan-500/10 rounded-xl sm:rounded-2xl w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center border border-cyan-500/30">
+                                    <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-cyan-400" />
+                                 </div>
+                                 <h3 className="text-lg sm:text-2xl font-bold text-white uppercase tracking-tight">GENERATE AUDIT REPORT</h3>
+                                 <p className="text-slate-400 font-medium text-xs sm:text-base leading-relaxed">Run a full predictive assessment of your hospital's compliance readiness.</p>
                              </div>
                              <button 
                                 onClick={() => { setIsAnalyzing(true); setTimeout(() => { setIsAnalyzing(false); setShowReport(true); }, 2000); }}
@@ -357,12 +357,12 @@ export default function NeonQCIInferenceMatrix() {
                             {/* Score Matrix */}
                             <div className="bg-black/50 rounded-3xl sm:rounded-[64px] border border-cyan-500/20 p-8 sm:p-12 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500 blur-3xl opacity-10"></div>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-6 sm:mb-12">Readiness Score</h4>
-                                <div className="flex items-baseline gap-2 sm:gap-4 mb-2">
-                                    <span className="text-6xl sm:text-9xl font-black tracking-tighter" style={{ color: stats.color, textShadow: `0 0 30px ${stats.color}50` }}>{Math.round(stats.score)}</span>
-                                    <span className="text-2xl sm:text-4xl font-black text-slate-800">%</span>
+                                <h4 className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-4 sm:mb-8">Readiness Score</h4>
+                                <div className="flex items-baseline gap-2 mb-1">
+                                    <span className="text-5xl sm:text-7xl font-bold tracking-tighter" style={{ color: stats.color }}>{Math.round(stats.score)}</span>
+                                    <span className="text-xl sm:text-2xl font-bold text-slate-700 border-l border-white/10 pl-3 ml-1">%</span>
                                 </div>
-                                <p className="text-xl font-black uppercase tracking-widest" style={{ color: stats.color }}>{stats.status}</p>
+                                <p className="text-sm font-bold uppercase tracking-widest mt-2" style={{ color: stats.color }}>{stats.status}</p>
                             </div>
 
                             {/* Neural Prediction */}
@@ -370,25 +370,25 @@ export default function NeonQCIInferenceMatrix() {
                                  <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-6 sm:mb-12">Predictions</h4>
                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
                                      <div>
-                                         <p className="text-[10px] font-black text-[#FF00E5] uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
-                                             <History className="w-4 h-4" /> Timeline
+                                         <p className="text-[9px] font-bold text-[#FF00E5] uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2">
+                                             <History className="w-3.5 h-3.5" /> Timeline
                                          </p>
-                                         <p className="text-3xl sm:text-6xl font-black text-white tracking-tighter mb-2 sm:mb-4">{stats.score > 80 ? '14' : '48'} Days</p>
-                                         <p className="text-xs font-bold text-slate-500 leading-relaxed uppercase tracking-tight">Estimated time until full compliance.</p>
+                                         <p className="text-2xl sm:text-4xl font-bold text-white tracking-tighter mb-1">{stats.score > 80 ? '14' : '48'} Days</p>
+                                         <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">Estimated till sync.</p>
                                      </div>
                                      <div>
-                                         <p className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
-                                             <Sparkles className="w-4 h-4" /> Pass Probability
+                                         <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2">
+                                             <Sparkles className="w-3.5 h-3.5" /> Pass Prob.
                                          </p>
-                                         <p className="text-3xl sm:text-6xl font-black text-white tracking-tighter mb-2 sm:mb-4">{Math.round(80 + (stats.score * 0.15))}%</p>
-                                         <p className="text-xs font-bold text-slate-500 leading-relaxed uppercase tracking-tight">Probability of zero non-conformities during assessment.</p>
+                                         <p className="text-2xl sm:text-4xl font-bold text-white tracking-tighter mb-1">{Math.round(80 + (stats.score * 0.15))}%</p>
+                                         <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">Zero-NC Probability.</p>
                                      </div>
                                      <div>
-                                         <p className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
-                                             <Target className="w-4 h-4" /> Accuracy
+                                         <p className="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2">
+                                             <Target className="w-3.5 h-3.5" /> Accuracy
                                          </p>
-                                         <p className="text-3xl sm:text-6xl font-black text-white tracking-tighter mb-2 sm:mb-4">{Math.min(99, Math.round((stats.answered / stats.total) * 100))}%</p>
-                                         <p className="text-xs font-bold text-slate-500 leading-relaxed uppercase tracking-tight">Confidence based on data coverage.</p>
+                                         <p className="text-2xl sm:text-4xl font-bold text-white tracking-tighter mb-1">{Math.min(99, Math.round((stats.answered / stats.total) * 100))}%</p>
+                                         <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">Confidence level.</p>
                                      </div>
                                  </div>
                                  

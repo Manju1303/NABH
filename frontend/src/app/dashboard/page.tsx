@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { ClipboardList, FileCheck, Users, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles } from 'lucide-react';
 
@@ -62,7 +63,7 @@ const tiles = [
 
 export default function HospitalDashboard() {
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-8">
         <Link href="/dashboard" className="hover:text-cyan-400 transition-colors">Home</Link> 
@@ -71,24 +72,24 @@ export default function HospitalDashboard() {
       </div>
 
       {/* Welcome Banner */}
-      <div className="relative mb-8 sm:mb-12 overflow-hidden rounded-2xl sm:rounded-[40px] p-6 sm:p-10 bg-slate-900 border border-white/5 shadow-2xl">
+      <div className="relative mb-8 sm:mb-12 overflow-hidden rounded-2xl sm:rounded-[40px] p-6 sm:p-10 bg-slate-900 border border-white/5 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-700">
          <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500 blur-[120px] opacity-10"></div>
          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-                <h1 className="text-2xl sm:text-4xl font-black text-white mb-2 flex items-center gap-3">
+                <h1 className="text-xl sm:text-3xl font-bold text-white mb-2 flex items-center gap-3">
                     Welcome, Administrator <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 animate-pulse" />
                 </h1>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-4">Application ID: <span className="text-cyan-400">SHCO/2026/00001</span></p>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px] mb-4">Application ID: <span className="text-cyan-400">SHCO/2026/00001</span></p>
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
                     Status: <span className="text-emerald-500 font-bold">Verification Active</span>
                 </div>
             </div>
             <div className="hidden lg:block">
-                <div className="p-6 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-md">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Overall Progress</p>
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Overall Progress</p>
                     <div className="w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 w-[65%] glow-cyan"></div>
+                        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 w-[65%]" style={{ boxShadow: '0 0 10px rgba(0, 242, 255, 0.4)' }}></div>
                     </div>
                 </div>
             </div>
@@ -99,37 +100,34 @@ export default function HospitalDashboard() {
       <h2 className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-[0.3em] sm:tracking-[0.4em] mb-6 sm:mb-8 text-center">Compliance Control Dashboard</h2>
 
       {/* Tile Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-10 sm:mb-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
         {tiles.map((tile) => (
           <Link
             key={tile.href}
             href={tile.href}
-            className={`group relative rounded-2xl sm:rounded-[32px] overflow-hidden transition-all hover:-translate-y-2 bg-slate-900 border border-white/5 p-5 sm:p-8`}
-            style={{ 
-                boxShadow: `0 20px 40px -20px rgba(0,0,0,0.5)`,
-            }}
+            className={`group relative rounded-2xl sm:rounded-3xl overflow-hidden transition-all hover:-translate-y-1.5 bg-slate-900 border border-white/5 p-5 sm:p-7 shadow-xl`}
           >
             {/* Hover Glow Background */}
             <div 
-              className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" 
+              className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500" 
               style={{ background: `radial-gradient(circle at center, ${tile.accent}, transparent)` }}
             ></div>
             
             <div className="relative z-10">
                 <div 
-                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 transition-transform group-hover:scale-110 duration-500"
-                    style={{ background: `rgba(255,255,255,0.05)`, border: `1px solid ${tile.border}` }}
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-5 transition-transform group-hover:scale-105 duration-500"
+                    style={{ background: `rgba(255,255,255,0.03)`, border: `1px solid ${tile.border}` }}
                 >
-                    {tile.icon}
+                    {React.cloneElement(tile.icon as React.ReactElement<any>, { className: 'w-5 h-5 text-white' })}
                 </div>
                 
-                <h3 className="text-base sm:text-xl font-black text-white mb-2 sm:mb-3 group-hover:text-cyan-400 transition-colors uppercase tracking-tight">{tile.label}</h3>
-                <p className="text-[11px] sm:text-xs font-bold leading-relaxed text-slate-500 group-hover:text-slate-300 transition-colors">{tile.description}</p>
+                <h3 className="text-sm sm:text-lg font-bold text-white mb-1.5 group-hover:text-cyan-400 transition-colors uppercase tracking-tight">{tile.label}</h3>
+                <p className="text-[10px] sm:text-xs font-semibold leading-relaxed text-slate-500 group-hover:text-slate-300 transition-colors">{tile.description}</p>
             </div>
 
             {/* Bottom Glow bar */}
             <div 
-                className="absolute bottom-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-500"
+                className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500"
                 style={{ background: tile.accent, boxShadow: `0 0 10px ${tile.accent}` }}
             ></div>
           </Link>

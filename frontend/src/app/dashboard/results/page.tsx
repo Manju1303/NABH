@@ -42,7 +42,7 @@ export default function ResultsPage() {
   const toggleExpand = (id: number) => setExpandedId(expandedId === id ? null : id);
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="hg-breadcrumb mb-3">
         <a href="/dashboard">Home</a> / <span style={{ color: '#94A3B8' }}>Assessment Results</span>
       </div>
