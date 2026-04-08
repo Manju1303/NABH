@@ -4,13 +4,9 @@ services:
     env: python
     buildCommand: pip install -r backend/requirements.txt
     startCommand: gunicorn -k uvicorn.workers.UvicornWorker main:app --chdir backend
-    plan: starter # Persistence requires a paid plan
+    plan: free # No disk needed — uses Supabase cloud PostgreSQL
     envVars:
-      - key: DB_PATH
-        value: /data/nabh.db
+      - key: DATABASE_URL
+        sync: false # Set this to your Supabase PostgreSQL URI in the Render dashboard
       - key: ALLOWED_ORIGINS
-        sync: false # Set this to your Vercel URL in the Render dashboard
-    disk:
-      name: nabh-data
-      mountPath: /data
-      sizeGB: 1
+        sync: false # Set this to your Vercel frontend URL in the Render dashboard

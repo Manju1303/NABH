@@ -84,7 +84,7 @@ NABH-main/
 |-------|-----------|
 | **Frontend** | Next.js 16.1.6, React 19.2, TypeScript, Tailwind CSS 4 |
 | **Backend** | Python FastAPI 0.115, SQLAlchemy 2.0, Pydantic 2.12 |
-| **Database** | SQLite (dev) / PostgreSQL (production) |
+| **Database** | Supabase Cloud PostgreSQL / SQLite (dev fallback) |
 | **Auth** | JWT (python-jose) + bcrypt |
 | **Icons** | Lucide React |
 | **HTTP Client** | Axios |
@@ -103,7 +103,17 @@ git clone https://github.com/Manju1303/NABH.git
 cd NABH
 ```
 
-### 2. Start the Backend
+### 2. Configure Environment Variables
+Create a file named `.env` in the `backend` directory with the following content:
+```env
+# Database URI (Use the Session Pooler URI from Supabase for IPv4 support)
+DATABASE_URL=postgresql://postgres.xxx:password@host:5432/postgres
+
+# Allowed Frontend Origins (comma-separated)
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+### 3. Start the Backend
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -111,7 +121,7 @@ uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ```
 Backend runs at `http://localhost:8001`
 
-### 3. Start the Frontend
+### 4. Start the Frontend
 ```bash
 cd frontend
 npm install
@@ -119,7 +129,7 @@ npm run dev
 ```
 Frontend runs at `http://localhost:3000`
 
-### 4. Login
+### 5. Login
 ```
 Email: admin@nabh.com
 Password: nabh2026
@@ -164,13 +174,17 @@ The system covers **10 chapters** of NABH Pre-Entry Level standards:
 4. Add Environment Variable: `NEXT_PUBLIC_API_URL` = your Render backend URL
 5. Click **Deploy** — done!
 
-#### Backend → Render (Free)
-1. Go to [render.com](https://render.com) and sign in with GitHub
-2. Click **"New Web Service"** → Connect `Manju1303/NABH`
-3. Set **Root Directory** to `backend`
-4. Set **Build Command**: `pip install -r requirements.txt`
-5. Set **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-6. Choose **Free** plan → Deploy!
+#### Backend → Render (Free) + Supabase (Database)
+1. **Database**: Create a project on [Supabase.com](https://supabase.com) and get your **Transaction/Session Pooler URI**.
+2. **Backend**: Go to [render.com](https://render.com) and sign in with GitHub.
+3. Click **"New Web Service"** → Connect `Manju1303/NABH`.
+4. Set **Root Directory** to `backend`.
+5. Set **Build Command**: `pip install -r requirements.txt`.
+6. Set **Start Command**: `gunicorn -k uvicorn.workers.UvicornWorker main:app --chdir backend`.
+7. **Environment Variables**:
+   - `DATABASE_URL`: Your Supabase URI.
+   - `ALLOWED_ORIGINS`: Your Vercel frontend URL.
+8. Choose **Free** plan → Deploy!
 
 > ⚠️ **Note**: Render free tier spins down after 15 min of inactivity. First request after sleep takes ~30 seconds.
 
