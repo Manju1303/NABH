@@ -18,6 +18,20 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    hospital_id: Optional[int] = None
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    role: str
+    hospital_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
 # ── Submission Schemas ──
 class BasicInformation(BaseModel):
     hospital_name: str = Field(..., min_length=2)

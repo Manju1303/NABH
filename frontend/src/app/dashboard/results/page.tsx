@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '@/lib/api';
+import api, { API_BASE_URL } from '@/lib/api';
 import { ArrowLeft, TrendingUp, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,7 +32,7 @@ export default function ResultsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    axios.get<{ total: number; records: SubmissionRecord[] }>(`${API_BASE_URL}/api/submissions`)
+    api.get<{ total: number; records: SubmissionRecord[] }>('/api/submissions')
       .then(res => { setRecords(res.data.records); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);

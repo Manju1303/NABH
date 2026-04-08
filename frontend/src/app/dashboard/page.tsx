@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ClipboardList, FileCheck, Users, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import API_BASE_URL from '@/lib/api';
 
 const tiles = [
   {
@@ -145,7 +146,7 @@ export default function HospitalDashboard() {
                 if(confirm('TOTAL SYSTEM RESET? This will wipe the ENTIRE database and your local data. This cannot be undone.')) {
                     localStorage.clear();
                     try {
-                        const res = await fetch('https://nabh-backend.onrender.com/api/system/factory-reset', { method: 'DELETE' });
+                        const res = await fetch(`${API_BASE_URL}/api/system/factory-reset`, { method: 'DELETE' });
                         if(res.ok) alert('System Reset Successful. All data wiped.');
                         else alert('Remote database reset failed. Please check your internet or contact support.');
                     } catch(e) {

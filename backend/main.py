@@ -40,6 +40,8 @@ app.include_router(remarks.router)
 app.include_router(deadlines.router)
 app.include_router(schedule.router)
 app.include_router(committee.router)
+app.include_router(users.router)
+app.include_router(auth.router)
 
 # ── NUCLEAR RESET (Temporary) ──
 @app.delete("/api/system/factory-reset")

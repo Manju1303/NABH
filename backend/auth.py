@@ -8,8 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import models, schemas, database
 
+import os
+
 # ── Security Configuration ──
-SECRET_KEY = "nabh_secret_key_change_me_in_production"
+SECRET_KEY = os.getenv("SECRET_KEY", "nabh_secret_key_change_me_in_production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -53,5 +55,34 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise credentials_exception
     return user
 
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+# ... (existing imports and config) ...
+
 async def get_current_active_user(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+# ── Login Endpoint ──
+from fastapi import APIRouter
+router = APIRouter(tags=["Authentication"])
+
+@router.post("/api/token", response_model=schemas.Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(database.get_db)
+):
+    result = await db.execute(select(models.User).filter(models.User.username == form_data.username))
+    user = result.scalars().first()
+    
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}

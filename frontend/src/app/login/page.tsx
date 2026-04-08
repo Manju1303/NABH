@@ -9,14 +9,30 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'admin@nabh.com' && password === 'nabh2026') {
-      router.push('/dashboard');
-    } else if (!email || !password) {
-      setError('Please enter email and password.');
-    } else {
-      setError('Invalid credentials. Please try again.');
+    setError('');
+    
+    try {
+      const formData = new URLSearchParams();
+      formData.append('username', email); // backend uses 'username' field
+      formData.append('password', password);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('nabh_token', data.access_token);
+        router.push('/dashboard');
+      } else {
+        setError('Invalid credentials. Please check your email/password.');
+      }
+    } catch (err) {
+      setError('Connection failed. Is the backend running?');
     }
   };
 

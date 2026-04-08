@@ -9,6 +9,7 @@ import {
   FlaskConical, Award, Bell, ChevronLeft, ChevronRight, Send, Cpu, LayoutDashboard, Target, RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
+import api from '@/lib/api';
 
 import { BasicInfoStep } from '@/components/registration/BasicInfoStep';
 import { HospitalDetailsStep } from '@/components/registration/HospitalDetailsStep';
@@ -147,7 +148,7 @@ export default function ComplianceForm() {
     };
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/submissions`, payload);
+      const res = await api.post('/api/submissions', payload);
       setResult(res.data.results);
       setDeficiencies(res.data.deficiencies || []);
       setStep(0);

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
-import API_BASE_URL from '@/lib/api';
+import api, { API_BASE_URL } from '@/lib/api';
 import { ArrowLeft, MessageSquareText, Send, User, Calendar, Search, AlertCircle } from 'lucide-react';
 
 interface Remark {
@@ -31,7 +30,8 @@ export default function RemarksPage() {
   const fetchLatestOrStored = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/api/submissions`);
+      const res = await api.get('/api/submissions');
+      // rest of the logic...
       const records = res.data.records;
       if (records && records.length > 0) {
         // Just take the latest for this demo context
@@ -49,7 +49,7 @@ export default function RemarksPage() {
 
   const fetchRemarks = async (id: number) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/submissions/${id}/remarks`);
+      const res = await api.get(`/api/submissions/${id}/remarks`);
       setRemarks(res.data);
     } catch (err) {
       console.error('Failed to fetch remarks');
@@ -61,7 +61,7 @@ export default function RemarksPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/submissions`);
+      const res = await api.get('/api/submissions');
       const found = res.data.records.find((r: any) => r.registration_number === regNumber.trim());
       if (found) {
         setRecord(found);
@@ -81,7 +81,7 @@ export default function RemarksPage() {
   const handleAddRemark = async () => {
     if (!newRemark.trim() || !record) return;
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/submissions/${record.id}/remarks`, {
+      const res = await api.post(`/api/submissions/${record.id}/remarks`, {
         author: 'Hospital Admin',
         message: newRemark.trim(),
         role: 'Applicant',

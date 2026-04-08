@@ -64,3 +64,8 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     role = Column(String) # admin, hospital_admin
+    
+    # Link to the hospital they manage (only for hospital_admin role)
+    hospital_id = Column(Integer, ForeignKey("submissions.id"), nullable=True)
+    
+    hospital = relationship("HospitalSubmission")

@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
-import API_BASE_URL from '@/lib/api';
+import api from '@/lib/api';
 import { ArrowLeft, CalendarClock, Clock, MapPin, User, Loader2 } from 'lucide-react';
 
 interface ScheduleEntry {
@@ -20,7 +19,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/api/schedule`)
+    api.get<ScheduleEntry[]>('/api/schedule')
       .then(res => {
         setSchedule(res.data);
         setLoading(false);

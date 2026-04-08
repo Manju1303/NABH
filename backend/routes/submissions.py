@@ -54,14 +54,21 @@ async def submit_form(form_data: schemas.NABHEntryLevelForm, db: AsyncSession = 
     return {"status": "success", "results": score_result, "deficiencies": deficiencies}
 
 @router.get("")
-async def list_submissions(db: AsyncSession = Depends(database.get_db)):
-    result = await db.execute(select(models.HospitalSubmission))
+async def list_submissions(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    if current_user.role == "admin":
+        query = select(models.HospitalSubmission)
+    else:
+        # Filter for hospital admin
+        if not current_user.hospital_id:
+            return {"total": 0, "records": []}
+        query = select(models.HospitalSubmission).filter(models.HospitalSubmission.id == current_user.hospital_id)
+        
+    result = await db.execute(query)
     records = result.scalars().all()
     
-    # Enrich with deadlines (simplified for now as back-compat)
+    # ... (rest of the logic) ...
     enriched = []
     for rec in records:
-        # We'll handle full enrichment in a separate helper or route specialized for dashboard
         enriched.append({
             "id": rec.id,
             "hospital_name": rec.hospital_name,
@@ -76,6 +83,38 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db)):
         })
     return {"total": len(enriched), "records": enriched}
 
+@router.patch("/{record_id}", response_model=dict)
+async def update_submission(
+    record_id: int, 
+    form_data: schemas.NABHEntryLevelForm, 
+    db: AsyncSession = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
+    # Security: Only Admin or the specific Hospital Admin can update
+    if current_user.role != "admin" and current_user.hospital_id != record_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this record")
+
+    result = await db.execute(select(models.HospitalSubmission).filter(models.HospitalSubmission.id == record_id))
+    record = result.scalars().first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    # Re-calculate score and deficiencies with new data
+    score_result = calculate_nabh_score(form_data)
+    deficiencies = evaluate_deficiencies(form_data.model_dump())
+
+    record.score = score_result["total_score"]
+    record.readiness_percentage = score_result["readiness_percentage"]
+    record.is_ready = score_result["is_ready"]
+    record.section_scores = score_result["section_scores"]
+    record.deficiencies = deficiencies
+    record.form_data = form_data.model_dump()
+    record.updated_at = datetime.utcnow()
+
+    db.add(record)
+    await db.commit()
+    return {"status": "updated", "results": score_result, "deficiencies": deficiencies}
+
 @router.delete("/{record_id}")
 async def delete_submission(record_id: int, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
     result = await db.execute(select(models.HospitalSubmission).filter(models.HospitalSubmission.id == record_id))
@@ -85,3 +124,38 @@ async def delete_submission(record_id: int, db: AsyncSession = Depends(database.
     await db.delete(record)
     await db.commit()
     return {"status": "deleted"}
+
+@router.get("/{record_id}/report")
+async def download_audit_report(record_id: int, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    # Only Admin or Committee can download full audit reports
+    if current_user.role not in ["admin", "committee"]:
+        raise HTTPException(status_code=403, detail="Not authorized to download audit reports")
+
+    result = await db.execute(select(models.HospitalSubmission).filter(models.HospitalSubmission.id == record_id))
+    record = result.scalars().first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["NABH FINAL AUDIT REPORT", datetime.utcnow().strftime("%Y-%m-%d")])
+    writer.writerow([])
+    writer.writerow(["Hospital Name", record.hospital_name])
+    writer.writerow(["Reg Number", record.registration_number])
+    writer.writerow(["Total Score", record.score])
+    writer.writerow(["Readiness %", f"{record.readiness_percentage}%"])
+    writer.writerow(["Status", "PASSED" if record.is_ready else "PENDING"])
+    writer.writerow([])
+    writer.writerow(["DEFICIENCIES FOUND:"])
+    if record.deficiencies:
+        for d in record.deficiencies:
+            writer.writerow([f"- {d}"])
+    else:
+        writer.writerow(["No deficiencies found."])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=NABH_Report_{record.registration_number}.csv"}
+    )
