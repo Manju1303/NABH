@@ -89,9 +89,6 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="mt-6 text-center text-xs" style={{ color: '#64748B' }}>
-              Default credentials: admin@nabh.com / nabh2026
-            </div>
           </div>
 
           <p className="text-center text-xs mt-4" style={{ color: '#475569' }}>
