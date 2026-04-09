@@ -46,3 +46,19 @@ async def get_db():
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Create default admin if no users exist
+    async with AsyncSessionLocal() as session:
+        from sqlalchemy import select
+        import models
+        import auth
+        user_result = await session.execute(select(models.User))
+        if not user_result.scalars().first():
+            admin_user = models.User(
+                username="admin@nabh.com",
+                hashed_password=auth.get_password_hash("admin123"),
+                role="admin"
+            )
+            session.add(admin_user)
+            await session.commit()
+            print("[DB] Created default admin user: admin@nabh.com / admin123")

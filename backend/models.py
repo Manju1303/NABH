@@ -1,14 +1,14 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, JSON, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
-from datetime import datetime
+from datetime import datetime, timezone
 
 class HospitalSubmission(Base):
     __tablename__ = "submissions"
 
     id = Column(Integer, primary_key=True, index=True)
-    submitted_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, onupdate=datetime.utcnow)
+    submitted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, onupdate=lambda: datetime.now(timezone.utc))
     
     hospital_name = Column(String, index=True)
     registration_number = Column(String, unique=True, index=True)
@@ -35,7 +35,7 @@ class Remark(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     submission_id = Column(Integer, ForeignKey("submissions.id"))
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     author = Column(String)
     role = Column(String)
     message = Column(String)
@@ -52,7 +52,7 @@ class RemediationDeadline(Base):
     deadline = Column(DateTime)
     label = Column(String)
     note = Column(String)
-    set_at = Column(DateTime, default=datetime.utcnow)
+    set_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     set_by = Column(String)
 
     submission = relationship("HospitalSubmission", back_populates="deadlines")
