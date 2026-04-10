@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClipboardList, FileCheck, Users, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles, Download, Loader2 } from 'lucide-react';
-import API_BASE_URL from '@/lib/api';
+import api, { API_BASE_URL } from '@/lib/api';
 
 const tiles = [
   {
@@ -43,7 +43,7 @@ const tiles = [
     description: 'View assessor notes, observations and additional remarks on submissions.',
     href: '/dashboard/remarks',
     icon: <MessageSquareText />,
-    border: 'rgba(34, 197,  green, 0.4)',
+    border: 'rgba(34, 197, 94, 0.4)',
     accent: 'from-emerald-400 to-teal-500'
   },
   {

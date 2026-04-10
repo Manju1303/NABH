@@ -2,14 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import API_BASE_URL from '@/lib/api';
-import { 
-  CheckCircle, AlertTriangle, FileText, Building2, Activity, Stethoscope, 
-  Users, ClipboardList, Zap, HeartPulse, GraduationCap, ShieldCheck, 
-  FlaskConical, Award, Bell, ChevronLeft, ChevronRight, Send, Cpu, LayoutDashboard, Target, RotateCcw
-} from 'lucide-react';
-import Link from 'next/link';
-import api from '@/lib/api';
+import api, { API_BASE_URL } from '@/lib/api';
 
 import { BasicInfoStep } from '@/components/registration/BasicInfoStep';
 import { HospitalDetailsStep } from '@/components/registration/HospitalDetailsStep';
@@ -65,7 +58,37 @@ export default function ComplianceForm() {
     accredType: 'Entry Level', prevAccred: false, prevAccredDate: '',
   });
 
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('nabh_registration_data');
+    if (saved) {
+      try {
+        setFd(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load saved form data", e);
+      }
+    }
+    
+    const savedStep = localStorage.getItem('nabh_registration_step');
+    if (savedStep) setStep(parseInt(savedStep));
+  }, []);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
+  }, [fd]);
+
+  useEffect(() => {
+    localStorage.setItem('nabh_registration_step', step.toString());
+  }, [step]);
+
   const updateFd = (updates: any) => setFd(prev => ({ ...prev, ...updates }));
+
+  const handleSave = () => {
+    localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
+    localStorage.setItem('nabh_registration_step', step.toString());
+    alert("Progress saved locally!");
+  };
 
   const sectionProgress = useMemo(() => {
     return Math.round(((step + 1) / STEPS.length) * 100);
@@ -77,84 +100,110 @@ export default function ComplianceForm() {
     if (!fd.email.includes('@')) return setError("Please enter a valid email address.");
 
     setLoading(true); setError(null);
-    const payload = {
-      basic_info: { hospital_name: fd.hospitalName, registration_number: fd.regNumber, contact_email: fd.email, phone: fd.phone },
-      hospital_details: {
-        hospital_type: fd.hospitalType, ownership_type: fd.ownershipType, built_up_area_sqmt: fd.builtUpArea, number_of_buildings: fd.buildings,
-        total_sanctioned_beds: fd.sanctionedBeds, operational_beds: fd.operationalBeds, casualty_emergency_beds: fd.emergencyBeds,
-        icu_beds: fd.icuBeds, hdu_beds: fd.hduBeds, private_ward_beds: fd.privateBeds, semi_private_ward_beds: fd.semiPrivateBeds, general_ward_beds: fd.generalBeds
-      },
-      opd_ipd: {
-        opd_patients_12_months: fd.opd12, admissions_12_months: fd.admissions12, inpatient_days_monthly_avg: fd.inpatientDays,
-        available_bed_days_monthly_avg: fd.availableBedDays, average_occupancy_pct: fd.avgOccupancy, icu_occupancy_pct: fd.icuOccupancy,
-        ward_occupancy_pct: fd.wardOccupancy, icu_inpatient_days_monthly_avg: fd.icuInpatientDays, available_icu_bed_days_monthly_avg: fd.availableIcuBedDays
-      },
-      clinical_services: {
-        top_10_clinical_services: fd.topServices, top_10_diagnoses: fd.topDiagnoses, top_10_surgical_procedures: fd.topSurgeries,
-        number_of_joint_replacements_yearly: fd.jointReplacements, clinical_service_volumes: []
-      },
-      hospital_staffing: {
-        nurses_present: fd.nursesPresent, nurses_list: fd.nursesPresent ? fd.nursesList : [],
-        nurses_document_uploaded: fd.nursesPresent && fd.nursesList.some(n => n.certificate_name), nurses_outsourced: fd.nursesOutsourced
-      },
-      ot_sterilization: {
-        number_of_ots: fd.numOTs, performs_super_speciality_surgeries: fd.superSpeciality, exclusive_ot_for_super_speciality: fd.exclusiveOT,
-        number_of_super_speciality_ots: fd.numSuperOTs, steam_autoclave: fd.steamAutoclave, eto_sterilization: fd.eto,
-        plasma_sterilization: fd.plasma, flash_sterilization: fd.flash, other_sterilization: fd.otherSterilization
-      },
-      utilities: {
-        ups_present: fd.upsPresent, ups_capacity_kv: fd.upsKV, generator_present: fd.genPresent, generator_capacity_kv: fd.genKV,
-        total_water_tanks: fd.waterTanks, total_water_capacity_litres: fd.waterCapacity, alternate_water_source: fd.altWater,
-        alternate_water_usage: fd.altWaterUsage, elevators_for_trolleys: fd.trolleyElevators, elevators_for_people: fd.peopleElevators,
-        trolleys_with_safety_belts: false, wheelchairs_with_safety_belts: false
-      },
-      infection_control_bmw: {
-        has_infection_control_committee: fd.icCommittee, nurses_trained_in_infection_control: fd.nursesIC,
-        hand_hygiene_audit_conducted: fd.handHygiene, has_biomedical_waste_authorization: fd.bmwAuth,
-        colour_coded_bins_available: fd.colorBins, segregation_instructions_displayed: fd.segregationInstr,
-        closed_container_transport: fd.closedTransport, needle_cutters_used: fd.needleCutters,
-        bmw_storage_facility: fd.bmwStorage, biohazard_sign_displayed: fd.biohazardSign,
-        housekeeping_checklists_maintained: fd.housekeeping, laundry_segregation_process: fd.laundryProcess
-      },
-      hr_training: {
-        training_scope_of_services: fd.trainingScope, training_safe_lab_practices: fd.trainingLab,
-        training_safe_imaging_practices: fd.trainingImaging, training_child_abduction_prevention: fd.trainingAbduction,
-        training_infection_control: fd.trainingInfection, fire_mock_drills_conducted: fd.fireDrills,
-        training_spill_management: fd.trainingSpill, training_safety_education: fd.trainingSafety,
-        training_needle_stick_injury: fd.trainingNeedle, training_medication_error: fd.trainingMedication,
-        training_disciplinary_procedures: false, training_grievance_handling: false
-      },
-      patient_processes: {
-        has_standard_consent_forms: fd.consentForms, medical_records_audited_monthly: fd.recordsAudit,
-        patient_feedback_system: fd.feedbackSystem, patient_rights_displayed: fd.patientRights,
-        grievance_redressal_mechanism: fd.grievance, lasa_drugs_storage_protocol: fd.lasaProtocol,
-        medication_labelling_protocol: false, fire_noc_valid: fd.fireNOC, regular_fire_drills: fd.fireDrills,
-        staff_trained_in_cpr: false, emergency_services_24x7: fd.emergency24, radiation_hazard_signage: fd.radiationSign,
-        pcpndt_declaration_displayed: fd.pcpndtDecl, biohazard_signage: false, fire_exit_signage: fd.fireExitSign,
-        directional_signage: fd.dirSign, departmental_signage: fd.deptSign, breakdown_maintenance_type: fd.breakdownMaint,
-        preventive_maintenance_type: fd.prevMaint
-      },
-      lab_imaging_blood: {
-        lab_critical_result_reporting: fd.labCritical, lab_tat_displayed: fd.labTAT, lab_scope_documented: fd.labScope,
-        imaging_critical_result_reporting: fd.imagingCritical, imaging_tat_displayed: fd.imagingTAT,
-        imaging_scope_documented: fd.imagingScope, blood_bank_transfusion_reaction_forms: fd.bloodBankForms,
-        blood_transfusion_committee_active: fd.bloodCommittee
-      },
-      key_personnel: { medical_director: fd.medDirector, quality_manager: fd.qualityManager, administrator: fd.administrator },
-      accreditation_info: {
-        accreditation_type: fd.accredType, previously_accredited: fd.prevAccred,
-        previous_accreditation_date: fd.prevAccredDate || null
-      }
-    };
-
     try {
+      const payload = {
+        basic_info: { 
+          hospital_name: fd.hospitalName, 
+          registration_number: fd.regNumber, 
+          contact_email: fd.email, 
+          phone: fd.phone 
+        },
+        hospital_details: {
+          hospital_type: fd.hospitalType, 
+          ownership_type: fd.ownershipType, 
+          built_up_area_sqmt: fd.builtUpArea, 
+          number_of_buildings: fd.buildings,
+          total_sanctioned_beds: fd.sanctionedBeds || 1, // Fallback to 1 to pass validation if user left it blank
+          operational_beds: fd.operationalBeds || 1,
+          casualty_emergency_beds: fd.emergencyBeds,
+          icu_beds: fd.icuBeds, 
+          hdu_beds: fd.hduBeds, 
+          private_ward_beds: fd.privateBeds, 
+          semi_private_ward_beds: fd.semiPrivateBeds, 
+          general_ward_beds: fd.generalBeds
+        },
+        opd_ipd: {
+          opd_patients_12_months: fd.opd12, admissions_12_months: fd.admissions12, inpatient_days_monthly_avg: fd.inpatientDays,
+          available_bed_days_monthly_avg: fd.availableBedDays, average_occupancy_pct: fd.avgOccupancy, icu_occupancy_pct: fd.icuOccupancy,
+          ward_occupancy_pct: fd.wardOccupancy, icu_inpatient_days_monthly_avg: fd.icuInpatientDays, available_icu_bed_days_monthly_avg: fd.availableIcuBedDays
+        },
+        clinical_services: {
+          top_10_clinical_services: fd.topServices, top_10_diagnoses: fd.topDiagnoses, top_10_surgical_procedures: fd.topSurgeries,
+          number_of_joint_replacements_yearly: fd.jointReplacements, clinical_service_volumes: []
+        },
+        hospital_staffing: {
+          nurses_present: fd.nursesPresent, nurses_list: fd.nursesPresent ? fd.nursesList : [],
+          nurses_document_uploaded: fd.nursesPresent && fd.nursesList.some(n => n.certificate_name), nurses_outsourced: fd.nursesOutsourced
+        },
+        ot_sterilization: {
+          number_of_ots: fd.numOTs, performs_super_speciality_surgeries: fd.superSpeciality, exclusive_ot_for_super_speciality: fd.exclusiveOT,
+          number_of_super_speciality_ots: fd.numSuperOTs, steam_autoclave: fd.steamAutoclave, eto_sterilization: fd.eto,
+          plasma_sterilization: fd.plasma, flash_sterilization: fd.flash, other_sterilization: fd.otherSterilization
+        },
+        utilities: {
+          ups_present: fd.upsPresent, ups_capacity_kv: fd.upsKV, generator_present: fd.genPresent, generator_capacity_kv: fd.genKV,
+          total_water_tanks: fd.waterTanks, total_water_capacity_litres: fd.waterCapacity, alternate_water_source: fd.altWater,
+          alternate_water_usage: fd.altWaterUsage, elevators_for_trolleys: fd.trolleyElevators, elevators_for_people: fd.peopleElevators,
+          trolleys_with_safety_belts: false, wheelchairs_with_safety_belts: false
+        },
+        infection_control_bmw: {
+          has_infection_control_committee: fd.icCommittee, nurses_trained_in_infection_control: fd.nursesIC,
+          hand_hygiene_audit_conducted: fd.handHygiene, has_biomedical_waste_authorization: fd.bmwAuth,
+          colour_coded_bins_available: fd.colorBins, segregation_instructions_displayed: fd.segregationInstr,
+          closed_container_transport: fd.closedTransport, needle_cutters_used: fd.needleCutters,
+          bmw_storage_facility: fd.bmwStorage, biohazard_sign_displayed: fd.biohazardSign,
+          housekeeping_checklists_maintained: fd.housekeeping, laundry_segregation_process: fd.laundryProcess
+        },
+        hr_training: {
+          training_scope_of_services: fd.trainingScope, training_safe_lab_practices: fd.trainingLab,
+          training_safe_imaging_practices: fd.trainingImaging, training_child_abduction_prevention: fd.trainingAbduction,
+          training_infection_control: fd.trainingInfection, fire_mock_drills_conducted: fd.fireDrills,
+          training_spill_management: fd.trainingSpill, training_safety_education: fd.trainingSafety,
+          training_needle_stick_injury: fd.trainingNeedle, training_medication_error: fd.trainingMedication,
+          training_disciplinary_procedures: false, training_grievance_handling: false
+        },
+        patient_processes: {
+          has_standard_consent_forms: fd.consentForms, medical_records_audited_monthly: fd.recordsAudit,
+          patient_feedback_system: fd.feedbackSystem, patient_rights_displayed: fd.patientRights,
+          grievance_redressal_mechanism: fd.grievance, lasa_drugs_storage_protocol: fd.lasaProtocol,
+          medication_labelling_protocol: false, fire_noc_valid: fd.fireNOC, regular_fire_drills: fd.fireDrills,
+          staff_trained_in_cpr: false, emergency_services_24x7: fd.emergency24, radiation_hazard_signage: fd.radiationSign,
+          pcpndt_declaration_displayed: fd.pcpndtDecl, biohazard_signage: false, fire_exit_signage: fd.fireExitSign,
+          directional_signage: fd.dirSign, departmental_signage: fd.deptSign, breakdown_maintenance_type: fd.breakdownMaint,
+          preventive_maintenance_type: fd.prevMaint
+        },
+        lab_imaging_blood: {
+          lab_critical_result_reporting: fd.labCritical, lab_tat_displayed: fd.labTAT, lab_scope_documented: fd.labScope,
+          imaging_critical_result_reporting: fd.imagingCritical, imaging_tat_displayed: fd.imagingTAT,
+          imaging_scope_documented: fd.imagingScope, blood_bank_transfusion_reaction_forms: fd.bloodBankForms,
+          blood_transfusion_committee_active: fd.bloodCommittee
+        },
+        key_personnel: { 
+          medical_director: fd.medDirector || 'TBD', 
+          quality_manager: fd.qualityManager || 'TBD', 
+          administrator: fd.administrator || 'TBD' 
+        },
+        accreditation_info: {
+          accreditation_type: fd.accredType, previously_accredited: fd.prevAccred,
+          previous_accreditation_date: fd.prevAccredDate || null
+        }
+      };
+
       const res = await api.post('/api/submissions', payload);
       setResult(res.data.results);
       setDeficiencies(res.data.deficiencies || []);
-      setStep(0);
+      setError(null);
+      // Don't reset step immediately, show results first
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Submission failed. Please check your connection and try again.');
+      console.error("Submission error:", err);
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        setError(`Validation Error: ${detail.map((d: any) => `${d.loc.join('.')} - ${d.msg}`).join(' | ')}`);
+      } else {
+        setError(detail || 'Submission failed. Please check your connection and try again.');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -207,7 +256,7 @@ export default function ComplianceForm() {
              </div>
              <div className="hidden sm:flex items-center gap-4">
                  <button 
-                    onClick={() => { if(confirm('WIPE ALL DATA? This will clear your current form.')) { localStorage.removeItem('hg_reg_form'); window.location.reload(); } }}
+                    onClick={() => { if(confirm('WIPE ALL DATA? This will clear your current form.')) { localStorage.removeItem('nabh_registration_data'); localStorage.removeItem('nabh_registration_step'); window.location.reload(); } }}
                     className="px-6 py-2 bg-rose-500/10 border border-rose-500/30 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2"
                  >
                     <RotateCcw className="w-3 h-3" /> RESET MATRIX
@@ -262,6 +311,29 @@ export default function ComplianceForm() {
                                 <span className="text-2xl font-black text-emerald-400">{result.total_score}%</span>
                             </div>
                         </div>
+
+                        {/* Deficiency Feed in Registration Success */}
+                        {deficiencies.length > 0 && (
+                            <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
+                                <h3 className="text-xs font-black text-rose-500 uppercase tracking-widest flex items-center gap-2">
+                                    <AlertCircle className="w-4 h-4" /> Detected Integrity Gaps
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {deficiencies.slice(0, 4).map((d: any, i: number) => (
+                                        <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-start gap-4 transition-all hover:bg-white/[0.07]">
+                                            <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                                            <div>
+                                                <p className="text-[10px] font-black text-white uppercase tracking-tight mb-1">{d.label}</p>
+                                                <p className="text-[9px] font-medium text-slate-500 leading-relaxed truncate max-w-[200px]">{d.message}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="pt-4 text-center">
+                                    <Link href="/dashboard/results" className="text-[9px] font-black text-cyan-400 uppercase tracking-[0.2em] hover:text-white transition-all underline underline-offset-4">View All Detailed Findings & Deadlines</Link>
+                                </div>
+                            </div>
+                        )}
                     </div>
                  )}
 
@@ -274,7 +346,10 @@ export default function ComplianceForm() {
                         >
                             <RotateCcw className="w-4 h-4" /> RESET ALL
                         </button>
-                        <button className="hidden sm:block px-8 py-3.5 bg-cyan-500 text-black rounded-2xl font-black text-sm shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:bg-cyan-400 transition-all hover:scale-105">
+                        <button 
+                            onClick={handleSave}
+                            className="hidden sm:block px-8 py-3.5 bg-cyan-500 text-black rounded-2xl font-black text-sm shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:bg-cyan-400 transition-all hover:scale-105"
+                        >
                             SAVE
                         </button>
                         <div className="p-3 sm:p-4 bg-cyan-500 rounded-xl sm:rounded-2xl shadow-lg shadow-cyan-500/30">

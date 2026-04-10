@@ -9,7 +9,7 @@ interface Deficiency {
   id: string;
   label: string;
   severity: 'critical' | 'high' | 'medium';
-  description: string;
+  message: string;
 }
 
 interface SubmissionRecord {
@@ -233,7 +233,7 @@ export default function ResultsPage() {
                                               def.severity === 'high' ? 'text-orange-400 bg-orange-500/10' : 'text-yellow-400 bg-yellow-500/10'
                                             }`}>{def.severity}</span>
                                           </div>
-                                          <p className="text-xs text-slate-400 leading-relaxed font-medium">{def.description}</p>
+                                          <p className="text-xs text-slate-400 leading-relaxed font-medium">{def.message}</p>
                                         </div>
                                       </div>
                                     ))}
