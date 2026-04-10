@@ -69,3 +69,14 @@ class User(Base):
     hospital_id = Column(Integer, ForeignKey("submissions.id"), nullable=True)
     
     hospital = relationship("HospitalSubmission")
+    draft = relationship("HospitalDraft", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+class HospitalDraft(Base):
+    __tablename__ = "drafts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    data = Column(JSON) # The full fd object
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="draft")

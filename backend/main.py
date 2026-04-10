@@ -64,6 +64,7 @@ async def factory_reset(
         
     from sqlalchemy import text
     # Wiping all compliance data
+    await db.execute(text("DELETE FROM drafts"))
     await db.execute(text("DELETE FROM remarks"))
     await db.execute(text("DELETE FROM deadlines"))
     await db.execute(text("DELETE FROM submissions"))

@@ -125,6 +125,29 @@ async def delete_submission(record_id: int, db: AsyncSession = Depends(database.
     await db.commit()
     return {"status": "deleted"}
 
+@router.get("/draft", response_model=dict)
+async def load_draft(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
+    draft = result.scalars().first()
+    if not draft:
+        return {"data": None}
+    return {"data": draft.data}
+
+@router.post("/draft")
+async def save_draft(payload: dict, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
+    draft = result.scalars().first()
+
+    if draft:
+        draft.data = payload
+        db.add(draft)
+    else:
+        new_draft = models.HospitalDraft(user_id=current_user.id, data=payload)
+        db.add(new_draft)
+    
+    await db.commit()
+    return {"status": "success"}
+
 @router.get("/{record_id}/report")
 async def download_audit_report(record_id: int, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
     # Only Admin or Committee can download full audit reports

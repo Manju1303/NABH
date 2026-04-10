@@ -58,24 +58,39 @@ export default function ComplianceForm() {
     accredType: 'Entry Level', prevAccred: false, prevAccredDate: '',
   });
 
-  // Load from localStorage on mount
+  // Load from Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem('nabh_registration_data');
-    if (saved) {
+    const fetchDraft = async () => {
       try {
-        setFd(JSON.parse(saved));
+        const res = await api.get('/api/submissions/draft');
+        if (res.data.data) {
+          setFd(prev => ({ ...prev, ...res.data.data }));
+        }
       } catch (e) {
-        console.error("Failed to load saved form data", e);
+        console.error("Failed to load cloud draft", e);
+        // Fallback to local if server is down
+        const saved = localStorage.getItem('nabh_registration_data');
+        if (saved) setFd(JSON.parse(saved));
       }
-    }
+    };
     
+    fetchDraft();
     const savedStep = localStorage.getItem('nabh_registration_step');
     if (savedStep) setStep(parseInt(savedStep));
   }, []);
 
-  // Save to localStorage whenever data changes
+  // Sync to Supabase periodically (Autosave)
   useEffect(() => {
-    localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
+    const timer = setTimeout(async () => {
+      try {
+        await api.post('/api/submissions/draft', fd);
+        localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
+      } catch (e) {
+        console.error("Autosave failed", e);
+      }
+    }, 2000); // 2 second debounce
+
+    return () => clearTimeout(timer);
   }, [fd]);
 
   useEffect(() => {
@@ -84,10 +99,16 @@ export default function ComplianceForm() {
 
   const updateFd = (updates: any) => setFd(prev => ({ ...prev, ...updates }));
 
-  const handleSave = () => {
-    localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
-    localStorage.setItem('nabh_registration_step', step.toString());
-    alert("Progress saved locally!");
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await api.post('/api/submissions/draft', fd);
+      alert("Progress synced to Cloud Matrix (Supabase)!");
+    } catch (e) {
+      alert("Sync failed. Check connection.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sectionProgress = useMemo(() => {
