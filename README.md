@@ -106,11 +106,13 @@ cd NABH
 ### 2. Configure Environment Variables
 Create a file named `.env` in the `backend` directory with the following content:
 ```env
-# Database URI (Use the Session Pooler URI from Supabase for IPv4 support)
-DATABASE_URL=postgresql://postgres.xxx:password@host:5432/postgres
-
 # Allowed Frontend Origins (comma-separated)
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Security (Added in v4.1 Audit)
+SECRET_KEY=your_very_secure_random_string
+SYSTEM_RESET_KEY=another_secure_string_for_factory_reset
+SEED_DB=true  # Set to true only once to seed initial admin
 ```
 
 ### 3. Start the Backend
@@ -120,6 +122,12 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ```
 Backend runs at `http://localhost:8001`
+
+### 4. Running Tests (Senior Tester Suite)
+```bash
+cd backend
+python -m pytest tests/
+```
 
 ### 4. Start the Frontend
 ```bash
@@ -250,6 +258,7 @@ This project is developed for academic purposes as part of the Anna University c
 ---
 
 <p align="center">
-  <strong>HealthGuard AI Engine v4.0.2</strong><br/>
+  <strong>HealthGuard AI Engine v4.1.0-STABLE</strong><br/>
+  <em>Senior Tester Verified & Security Hardened</em><br/>
   <em>Powered by NABH Pre-Entry Level Accreditation Standards</em>
 </p>
