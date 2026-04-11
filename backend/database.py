@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database Configuration
-# Supports both SQLite (local/disk) and PostgreSQL (Supabase/Render)
+IS_PRODUCTION = os.getenv("RENDER", "") != ""
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
