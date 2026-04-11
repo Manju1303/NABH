@@ -13,7 +13,11 @@ from compliance import evaluate_deficiencies
 router = APIRouter(prefix="/api/submissions", tags=["submissions"])
 
 @router.post("", response_model=dict)
-async def submit_form(form_data: schemas.NABHEntryLevelForm, db: AsyncSession = Depends(database.get_db)):
+async def submit_form(
+    form_data: schemas.NABHEntryLevelForm, 
+    db: AsyncSession = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     # Scoring
     score_result = calculate_nabh_score(form_data)
     # Deficiency evaluation
@@ -42,16 +46,29 @@ async def submit_form(form_data: schemas.NABHEntryLevelForm, db: AsyncSession = 
         "form_data": form_data.model_dump()
     }
 
+    target_record_id = None
     if existing:
         for key, value in record_data.items():
             setattr(existing, key, value)
         db.add(existing)
+        target_record_id = existing.id
     else:
         new_submission = models.HospitalSubmission(**record_data)
         db.add(new_submission)
+        await db.flush() # Get the new ID
+        target_record_id = new_submission.id
+
+    # AUTO-BRIDGE: Link user to this hospital if not already linked
+    if not current_user.hospital_id:
+        current_user.hospital_id = target_record_id
+        db.add(current_user)
+
+    # DRAFT SANITIZATION: Clear the draft since it's now a permanent submission
+    from sqlalchemy import delete
+    await db.execute(delete(models.HospitalDraft).where(models.HospitalDraft.user_id == current_user.id))
 
     await db.commit()
-    return {"status": "success", "results": score_result, "deficiencies": deficiencies}
+    return {"status": "success", "id": target_record_id, "results": score_result, "deficiencies": deficiencies}
 
 @router.get("")
 async def list_submissions(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):

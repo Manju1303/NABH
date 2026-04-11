@@ -29,6 +29,7 @@ class HospitalSubmission(Base):
 
     remarks = relationship("Remark", back_populates="submission", cascade="all, delete-orphan")
     deadlines = relationship("RemediationDeadline", back_populates="submission", cascade="all, delete-orphan")
+    remediation_steps = relationship("RemediationStep", back_populates="submission", cascade="all, delete-orphan")
 
 class Remark(Base):
     __tablename__ = "remarks"
@@ -93,4 +94,4 @@ class RemediationStep(Base):
     completion_date = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    submission = relationship("HospitalSubmission")
+    submission = relationship("HospitalSubmission", back_populates="remediation_steps")

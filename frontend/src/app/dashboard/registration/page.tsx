@@ -214,7 +214,16 @@ export default function ComplianceForm() {
       setResult(res.data.results);
       setDeficiencies(res.data.deficiencies || []);
       setError(null);
-      // Don't reset step immediately, show results first
+      
+      // BRIDGE FIX: Success Redirection & Sanitization
+      localStorage.removeItem('nabh_registration_data');
+      localStorage.removeItem('nabh_registration_step');
+      
+      alert('NABH Submission Successful! Redirecting to Audit Results...');
+      setTimeout(() => {
+        window.location.href = '/dashboard/results';
+      }, 3000);
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       console.error("Submission error:", err);
@@ -277,7 +286,16 @@ export default function ComplianceForm() {
              </div>
              <div className="hidden sm:flex items-center gap-4">
                  <button 
-                    onClick={() => { if(confirm('WIPE ALL DATA? This will clear your current form.')) { localStorage.removeItem('nabh_registration_data'); localStorage.removeItem('nabh_registration_step'); window.location.reload(); } }}
+                    onClick={async () => { 
+                        if(confirm('WIPE ALL DATA? This will clear your current form and Cloud Matrix data.')) { 
+                            try {
+                                await api.post('/api/submissions/draft', {}); // Clear cloud
+                            } catch(e) {}
+                            localStorage.removeItem('nabh_registration_data'); 
+                            localStorage.removeItem('nabh_registration_step'); 
+                            window.location.reload(); 
+                        } 
+                    }}
                     className="px-6 py-2 bg-rose-500/10 border border-rose-500/30 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2"
                  >
                     <RotateCcw className="w-3 h-3" /> RESET MATRIX
