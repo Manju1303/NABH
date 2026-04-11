@@ -6,7 +6,9 @@ services:
     startCommand: gunicorn -k uvicorn.workers.UvicornWorker main:app
     plan: free # No disk needed — uses Supabase cloud PostgreSQL
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: DATABASE_URL
-        sync: false # Set this to your Supabase PostgreSQL URI in the Render dashboard
+        sync: false
       - key: ALLOWED_ORIGINS
-        sync: false # Set this to your Vercel frontend URL in the Render dashboard
+        sync: false

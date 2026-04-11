@@ -95,7 +95,7 @@ NABH-main/
 
 ### Prerequisites
 - **Node.js** 18+ and **npm**
-- **Python** 3.10+
+- **Python** 3.11 (Recommended for stability on Render)
 
 ### 1. Clone the Repository
 ```bash
