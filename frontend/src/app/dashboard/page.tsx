@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClipboardList, FileCheck, Users, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles, Download, Loader2 } from 'lucide-react';
-import api, { API_BASE_URL } from '@/lib/api';
+import api, { API_BASE_URL, getMe } from '@/lib/api';
 
 const tiles = [
   {
@@ -58,13 +58,33 @@ const tiles = [
 
 export default function HospitalDashboard() {
   const [downloading, setDownloading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const u = await getMe();
+        setUser(u);
+      } catch (e) {
+        console.error("Failed to fetch user profile", e);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleDownloadReport = async () => {
+    if (!user?.hospital_id && user?.role !== 'admin') {
+       alert('Complete your registration first to generate a report.');
+       return;
+    }
+    
     setDownloading(true);
     try {
       const token = localStorage.getItem('nabh_token');
-      // For demo purposes, we'll try to download ID 1. In a real app, this would be the user's hospital ID.
-      const res = await fetch(`${API_BASE_URL}/api/reports/download/1`, {
+      // Use the actual hospital_id or fallback to 1 for admins/demo
+      const targetId = user?.hospital_id || 1; 
+
+      const res = await fetch(`${API_BASE_URL}/api/reports/download/${targetId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -73,7 +93,7 @@ export default function HospitalDashboard() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'NABH_Readiness_Report.pdf';
+        a.download = `NABH_Readiness_Report_${targetId}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -169,20 +189,34 @@ export default function HospitalDashboard() {
                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em]">Military Grade Encryption</span>
             </div>
             <div className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] cursor-pointer hover:text-rose-500 transition-colors" onClick={async () => {
-                if(confirm('TOTAL SYSTEM RESET? This will wipe the ENTIRE database and your local data. This cannot be undone.')) {
+                if (user?.role !== 'admin') {
+                    alert('Only System Administrators can perform a reset.');
+                    return;
+                }
+                const resetKey = prompt('CRITICAL: Enter SYSTEM_RESET_KEY to confirm total data wipe:');
+                if(!resetKey) return;
+
+                if(confirm('FINAL WARNING: This will wipe the ENTIRE database. Proceed?')) {
                     const token = localStorage.getItem('nabh_token');
-                    localStorage.clear();
                     try {
                         const res = await fetch(`${API_BASE_URL}/api/system/factory-reset`, { 
                             method: 'DELETE',
-                            headers: { 'Authorization': `Bearer ${token}` }
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'X-System-Reset-Key': resetKey
+                            }
                         });
-                        if(res.ok) alert('System Reset Successful. All data wiped.');
-                        else alert('Access Denied: Only administrators can perform a system reset.');
+                        if(res.ok) {
+                             alert('System Reset Successful. All data wiped.');
+                             localStorage.clear();
+                             window.location.reload();
+                        } else {
+                             const err = await res.json();
+                             alert(`Access Denied: ${err.detail || 'Wrong Key'}`);
+                        }
                     } catch(e) {
-                         alert('Remote database reset failed. Local data cleared.');
+                         alert('Network error during reset.');
                     }
-                    window.location.reload();
                 }
             }}>
                 Factory Reset

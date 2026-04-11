@@ -47,18 +47,19 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
-    # Create default admin if no users exist
-    async with AsyncSessionLocal() as session:
-        from sqlalchemy import select
-        import models
-        import auth
-        user_result = await session.execute(select(models.User))
-        if not user_result.scalars().first():
-            admin_user = models.User(
-                username="admin@nabh.com",
-                hashed_password=auth.get_password_hash("admin123"),
-                role="admin"
-            )
-            session.add(admin_user)
-            await session.commit()
-            print("[DB] Created default admin user: admin@nabh.com / admin123")
+    # Create default admin if no users exist (Development only or with explicit flag)
+    if os.getenv("SEED_DB", "false").lower() == "true" or not IS_PRODUCTION:
+        async with AsyncSessionLocal() as session:
+            from sqlalchemy import select
+            import models
+            import auth
+            user_result = await session.execute(select(models.User))
+            if not user_result.scalars().first():
+                admin_user = models.User(
+                    username="admin@nabh.com",
+                    hashed_password=auth.get_password_hash("admin123"),
+                    role="admin"
+                )
+                session.add(admin_user)
+                await session.commit()
+                print("[DB] Created initial admin user for development.")

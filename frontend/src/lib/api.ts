@@ -16,5 +16,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const getMe = async () => {
+    const response = await api.get('/api/users/me');
+    return response.data;
+};
+
 export { API_BASE_URL };
 export default api;

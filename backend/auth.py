@@ -16,11 +16,11 @@ IS_PRODUCTION = os.getenv("RENDER", "") != ""
 
 if not SECRET_KEY:
     if IS_PRODUCTION:
-        raise RuntimeError("SECRET_KEY environment variable is not set!")
-    SECRET_KEY = "nabh_secret_key_dev_only_change_in_prod"
+        raise RuntimeError("SECRET_KEY environment variable MUST be set in production!")
+    SECRET_KEY = "nabh_dev_key_change_me"
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 600 # 10 hours for smoother development
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Reduced from 600 to 60 for security
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")

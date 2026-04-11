@@ -3,7 +3,8 @@ node_modules/
 __pycache__/
 *.pyc
 .env
-.env.local
+.env.*
+!.env.example
 .venv/
 venv/
 
@@ -12,10 +13,23 @@ venv/
 out/
 dist/
 build/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
@@ -24,3 +38,5 @@ Thumbs.db
 # Temp
 *.log
 build_final.txt
+tmp/
+temp/
