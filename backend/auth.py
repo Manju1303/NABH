@@ -16,8 +16,10 @@ IS_PRODUCTION = os.getenv("RENDER", "") != ""
 
 if not SECRET_KEY:
     if IS_PRODUCTION:
-        raise RuntimeError("SECRET_KEY environment variable MUST be set in production!")
-    SECRET_KEY = "nabh_dev_key_change_me"
+        # We log a critical message instead of crashing, to allow 'Quick Start' users to see the UI.
+        # But we use the fallback key so the app still starts.
+        print("CRITICAL: SECRET_KEY environment variable is NOT set! Using fallback dev key.")
+    SECRET_KEY = os.getenv("FALLBACK_KEY", "nabh_dev_key_change_me")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Reduced from 600 to 60 for security

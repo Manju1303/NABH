@@ -119,9 +119,9 @@ SEED_DB=true  # Set to true only once to seed initial admin
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+uvicorn main:app --host 0.0.0.0 --port $PORT
 ```
-Backend runs at `http://localhost:8001`
+Backend runs at `http://localhost:$PORT`
 
 ### 4. Running Tests (Senior Tester Suite)
 ```bash
@@ -188,7 +188,7 @@ The system covers **10 chapters** of NABH Pre-Entry Level standards:
 3. Click **"New Web Service"** → Connect `Manju1303/NABH`.
 4. Set **Root Directory** to `backend`.
 5. Set **Build Command**: `pip install -r requirements.txt`.
-6. Set **Start Command**: `gunicorn -k uvicorn.workers.UvicornWorker main:app --chdir backend`.
+6. Set **Start Command**: `gunicorn -k uvicorn.workers.UvicornWorker main:app`.
 7. **Environment Variables**:
    - `DATABASE_URL`: Your Supabase URI.
    - `ALLOWED_ORIGINS`: Your Vercel frontend URL.
