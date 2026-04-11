@@ -3,6 +3,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import api, { API_BASE_URL } from '@/lib/api';
+import { 
+  FileText, Building2, Activity, Stethoscope, HeartPulse, GraduationCap, 
+  FlaskConical, Award, Zap, RotateCcw, CheckCircle, AlertTriangle, Cpu, 
+  AlertCircle, Target, ChevronLeft, ChevronRight, Send, ClipboardList, Users,
+  ShieldCheck, ArrowLeft, Clock, Info, Save, Upload, Loader2
+} from 'lucide-react';
+import Link from 'next/link';
 
 import { BasicInfoStep } from '@/components/registration/BasicInfoStep';
 import { HospitalDetailsStep } from '@/components/registration/HospitalDetailsStep';
