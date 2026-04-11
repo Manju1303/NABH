@@ -17,7 +17,7 @@ logging.basicConfig(
 logger = logging.getLogger("nabh-api")
 
 from database import init_db, get_db
-from routes import submissions, remarks, deadlines, schedule, committee, users, reports
+from routes import submissions, remarks, deadlines, schedule, committee, users, reports, remediation
 import auth
 
 IS_PRODUCTION = os.getenv("RENDER", "") != ""
@@ -60,6 +60,7 @@ app.include_router(committee.router)
 app.include_router(users.router)
 app.include_router(reports.router)
 app.include_router(auth.router)
+app.include_router(remediation.router)
 
 # ── NUCLEAR RESET (Hardened) ──
 @app.delete("/api/system/factory-reset")

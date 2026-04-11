@@ -80,3 +80,17 @@ class HospitalDraft(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="draft")
+
+class RemediationStep(Base):
+    __tablename__ = "remediation"
+
+    id = Column(Integer, primary_key=True, index=True)
+    submission_id = Column(Integer, ForeignKey("submissions.id"))
+    deficiency_id = Column(String)
+    
+    status = Column(String, default="pending") # pending, in_progress, resolved, verified
+    action_taken = Column(String, nullable=True)
+    completion_date = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    submission = relationship("HospitalSubmission")

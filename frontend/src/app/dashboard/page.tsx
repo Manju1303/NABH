@@ -54,6 +54,14 @@ const tiles = [
     border: 'rgba(234, 179, 8, 0.4)',
     accent: 'from-amber-400 to-orange-500'
   },
+  {
+    label: 'Remediation Tracking',
+    description: 'Track progress on fixing identified deficiencies and upload closure evidence.',
+    href: '/dashboard/remediation',
+    icon: <Zap />,
+    border: 'rgba(239, 68, 68, 0.4)',
+    accent: 'from-rose-500 to-red-600'
+  },
 ];
 
 export default function HospitalDashboard() {

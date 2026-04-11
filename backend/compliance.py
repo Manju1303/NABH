@@ -23,7 +23,9 @@ NABH_THRESHOLDS = [
         "min_value": 10,
         "unit": "beds",
         "severity": "critical",
-        "nabh_reference": "NABH Entry Level - Infrastructure Requirement",
+        "nabh_reference": "AAC.1 (Infrastructure)",
+        "verification": "Bed Census Register / Inpatient Records",
+        "reason": "Minimum bed capacity is required to ensure the facility has the infrastructure to support inpatient clinical services."
     },
     {
         "id": "icu_beds",
@@ -33,7 +35,9 @@ NABH_THRESHOLDS = [
         "min_value": 2,
         "unit": "beds",
         "severity": "critical",
-        "nabh_reference": "NABH Entry Level - ICU Requirement",
+        "nabh_reference": "COP.3 (Intensive Care)",
+        "verification": "OT/ICU Infrastructure Audit",
+        "reason": "Safe critical care delivery requires a dedicated ICU environment with minimum threshold capacity."
     },
     {
         "id": "emergency_beds",
@@ -43,7 +47,9 @@ NABH_THRESHOLDS = [
         "min_value": 2,
         "unit": "beds",
         "severity": "high",
-        "nabh_reference": "NABH Entry Level - Emergency Services",
+        "nabh_reference": "COP.1 (Emergency Services)",
+        "verification": "Emergency Dept. Physical Audit",
+        "reason": "Casualty beds must be available 24/7 to handle immediate triage and life-saving interventions."
     },
 
     # Utilities
@@ -148,6 +154,8 @@ MANDATORY_BOOLEANS = [
         "field": "infection_control_bmw.has_infection_control_committee",
         "severity": "critical",
         "nabh_reference": "HIC.1 - Infection Control Program",
+        "verification": "Constitution Order / Meeting Minutes",
+        "reason": "A formal committee is essential for governing hospital-wide infection prevention and control policies."
     },
     {
         "id": "bmw_authorization",
@@ -155,7 +163,9 @@ MANDATORY_BOOLEANS = [
         "label": "BMW Authorization from Pollution Control Board is mandatory",
         "field": "infection_control_bmw.has_biomedical_waste_authorization",
         "severity": "critical",
-        "nabh_reference": "NABH - BMW Management",
+        "nabh_reference": "Statutory - BMW Management",
+        "verification": "Valid PCB Certificate",
+        "reason": "Legal authorization from the State Pollution Control Board is a non-negotiable statutory requirement."
     },
     {
         "id": "fire_noc",
@@ -163,7 +173,9 @@ MANDATORY_BOOLEANS = [
         "label": "Valid Fire NOC is mandatory",
         "field": "patient_processes.fire_noc_valid",
         "severity": "critical",
-        "nabh_reference": "NABH - Fire Safety Standards",
+        "nabh_reference": "FMS.2 - Fire Safety",
+        "verification": "Fire Department NOC Certificate",
+        "reason": "Fire safety clearance is mandatory for patient safety and building occupancy standards."
     },
     {
         "id": "emergency_24x7",
@@ -171,7 +183,9 @@ MANDATORY_BOOLEANS = [
         "label": "24x7 Emergency Services must be available",
         "field": "patient_processes.emergency_services_24x7",
         "severity": "critical",
-        "nabh_reference": "NABH Entry Level - Emergency Requirement",
+        "nabh_reference": "COP.1 - Emergency Care",
+        "verification": "Duty Rosters / ER Logbooks",
+        "reason": "Entry-level hospitals must provide round-the-clock emergency medical services."
     },
     {
         "id": "consent_forms",
@@ -293,7 +307,9 @@ def evaluate_deficiencies(form_data: dict) -> list[dict]:
                 "unit": threshold["unit"],
                 "severity": threshold["severity"],
                 "nabh_reference": threshold["nabh_reference"],
-                "message": f"Current: {actual_value} {threshold['unit']} — Required minimum: {threshold['min_value']} {threshold['unit']}",
+                "verification_method": threshold.get("verification", "Field Evidence"),
+                "reasoning": threshold.get("reason", "Standard requirement not met."),
+                "message": f"Validated: {actual_value} {threshold['unit']} (Required: {threshold['min_value']} {threshold['unit']})",
                 "suggested_deadline_days": deadline_days,
                 "suggested_deadline": (datetime.now() + timedelta(days=deadline_days)).isoformat(),
             })
@@ -315,7 +331,9 @@ def evaluate_deficiencies(form_data: dict) -> list[dict]:
                 "unit": "",
                 "severity": severity,
                 "nabh_reference": req["nabh_reference"],
-                "message": f"This requirement is not yet met.",
+                "verification_method": req.get("verification", "Documentary Evidence"),
+                "reasoning": req.get("reason", "Mandatory requirement not met."),
+                "message": f"Validation Failed: {req['label']} is missing or not established.",
                 "suggested_deadline_days": deadline_days,
                 "suggested_deadline": (datetime.now() + timedelta(days=deadline_days)).isoformat(),
             })

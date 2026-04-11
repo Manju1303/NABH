@@ -233,7 +233,19 @@ export default function ResultsPage() {
                                               def.severity === 'high' ? 'text-orange-400 bg-orange-500/10' : 'text-yellow-400 bg-yellow-500/10'
                                             }`}>{def.severity}</span>
                                           </div>
-                                          <p className="text-xs text-slate-400 leading-relaxed font-medium">{def.message}</p>
+                                          <p className="text-xs text-slate-400 leading-relaxed font-medium mb-3">{def.reasoning || def.message}</p>
+                                          
+                                          {/* Audit Bridge Logic */}
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 p-3 rounded-xl bg-white/5 border border-white/5 shadow-inner">
+                                             <div>
+                                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Standard Mapping</p>
+                                                 <p className="text-xs font-bold text-cyan-400">{def.nabh_reference}</p>
+                                             </div>
+                                             <div>
+                                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Required Verification</p>
+                                                 <p className="text-xs font-bold text-white/80">{def.verification_method || 'Document Review'}</p>
+                                             </div>
+                                          </div>
                                         </div>
                                       </div>
                                     ))}
