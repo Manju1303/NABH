@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building2, Lock, Mail, ArrowRight } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/api';
 
 export default function Login() {
   const router = useRouter();
@@ -14,11 +15,7 @@ export default function Login() {
     setError('');
     
     try {
-      const formData = new URLSearchParams();
-      formData.append('username', email); // backend uses 'username' field
-      formData.append('password', password);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/token`, {
+      const response = await fetch(`${API_BASE_URL}/api/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: formData,
