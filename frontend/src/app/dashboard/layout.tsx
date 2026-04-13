@@ -1,13 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { LayoutDashboard, Building2, MessageSquare, LogOut, Menu, X, ShieldCheck } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, Building2, MessageSquare, LogOut, Menu, X, ShieldCheck, Loader2 } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('nabh_token');
+    if (!token) {
+      router.push('/login');
+    } else {
+      setIsAuthChecking(false);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('nabh_token');
+    localStorage.removeItem('nabh_registration_data');
+    router.push('/login');
+  };
 
   const links = [
     { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -15,11 +32,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/qci-checklist', label: 'Checklist', icon: <ShieldCheck className="w-4 h-4" /> },
     { href: '/dashboard/results', label: 'Results', icon: <Building2 className="w-4 h-4" /> },
     { href: '/dashboard/remarks', label: 'Remarks', icon: <MessageSquare className="w-4 h-4" /> },
+    { href: '/dashboard/remediation', label: 'Remediation', icon: <ShieldCheck className="w-4 h-4" /> },
     { href: '/dashboard/schedule', label: 'Schedule', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/dashboard/committee', label: 'Committee', icon: <MessageSquare className="w-4 h-4" /> },
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  if (isAuthChecking) {
+    return (
+      <div className="h-screen bg-[#020617] flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+          <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest animate-pulse">Verifying Credentials...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#020617]">
@@ -49,9 +75,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Status: Active</span>
              <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-none">Admin Portal</span>
           </div>
-          <Link href="/login" className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-400 hover:text-white transition-all uppercase tracking-widest">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-400 hover:text-white transition-all uppercase tracking-widest"
+          >
             <LogOut className="w-3 h-3" /> Logout
-          </Link>
+          </button>
         </div>
       </header>
 

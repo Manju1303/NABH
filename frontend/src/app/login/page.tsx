@@ -15,6 +15,10 @@ export default function Login() {
     setError('');
     
     try {
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+
       const response = await fetch(`${API_BASE_URL}/api/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

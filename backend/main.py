@@ -50,6 +50,7 @@ if "https://nabh.vercel.app" not in ALLOWED_ORIGINS:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.(vercel\.app|onrender\.com)", # Support Vercel and Render frontends
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

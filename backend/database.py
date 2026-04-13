@@ -27,8 +27,12 @@ else:
 engine = create_async_engine(
     DB_URL,
     echo=False,
-    # For PostgreSQL: use a connection pool; for SQLite: single connection
+    # High-Performance Cloud Settings for Supabase/Render
+    pool_size=10, 
+    max_overflow=20,
+    pool_recycle=300,
     pool_pre_ping=True,
+    pool_use_lifo=True,
 )
 
 AsyncSessionLocal = async_sessionmaker(
