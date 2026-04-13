@@ -24,12 +24,18 @@ else:
     DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
     print(f"[DB] Using local SQLite at: {DB_PATH}")
 
+# Connection arguments for Supabase PgBouncer (Transaction Pooler)
+connect_args = {}
+if DATABASE_URL:
+    connect_args["prepared_statement_cache_size"] = 0
+
 engine = create_async_engine(
     DB_URL,
     echo=False,
-    # High-Performance Cloud Settings for Supabase/Render
-    pool_size=10, 
-    max_overflow=20,
+    connect_args=connect_args,
+    # High-Performance Settings
+    pool_size=10 if DATABASE_URL else 5, 
+    max_overflow=20 if DATABASE_URL else 10,
     pool_recycle=300,
     pool_pre_ping=True,
     pool_use_lifo=True,
