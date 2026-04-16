@@ -17,7 +17,7 @@ logging.basicConfig(
 logger = logging.getLogger("nabh-api")
 
 from database import init_db, get_db
-from routes import submissions, remarks, deadlines, schedule, committee, users, reports, remediation
+from routes import submissions, remarks, deadlines, schedule, users, reports, remediation
 import auth
 
 IS_PRODUCTION = os.getenv("RENDER", "") != ""
@@ -61,7 +61,6 @@ app.include_router(submissions.router)
 app.include_router(remarks.router)
 app.include_router(deadlines.router)
 app.include_router(schedule.router)
-app.include_router(committee.router)
 app.include_router(users.router)
 app.include_router(reports.router)
 app.include_router(auth.router)

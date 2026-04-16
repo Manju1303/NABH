@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)]()
-[![Version](https://img.shields.io/badge/version-4.0.2-cyan)]()
+[![Version](https://img.shields.io/badge/version-4.2.0-cyan)]()
 
 ---
 
@@ -33,7 +33,6 @@ Hospital accreditation by the **National Accreditation Board for Hospitals and H
 | 🔍 **Gap Analysis** | Real-time identification of non-compliant areas with severity flagging |
 | 💬 **Remarks & Communication** | Assessor notes, observations, and correction tracking |
 | 📆 **Assessment Scheduling** | Track upcoming NABH assessment visits and timelines |
-| 👥 **Committee Decisions** | Review accreditation committee recommendations |
 | 🌗 **Dark Theme UI** | Premium cyberpunk-inspired dark interface throughout |
 | 📱 **Fully Responsive** | Works on mobile (320px+), tablet, and desktop |
 
@@ -58,8 +57,8 @@ NABH-main/
 │   │       │   └── checklist-data.ts  # 140+ NABH questions
 │   │       ├── results/         # Assessment results + KPIs
 │   │       ├── remarks/         # Communication module
-│   │       ├── schedule/        # Assessment scheduling
-│   │       └── committee/       # Committee decisions
+│   │       ├── remediation/     # Deficiency tracking
+│   │       └── schedule/        # Assessment scheduling
 │   └── package.json
 │
 ├── backend/                     # Python FastAPI
@@ -241,7 +240,6 @@ If you only need the frontend (no backend API):
 | **Results** | KPI cards, submission history, deficiency reports |
 | **Remarks** | Communication thread with role-based messages |
 | **Schedule** | Assessment timeline with status badges |
-| **Committee** | Decision tracking table |
 
 ---
 
@@ -258,7 +256,7 @@ This project is developed for academic purposes as part of the Anna University c
 ---
 
 <p align="center">
-  <strong>HealthGuard AI Engine v4.1.0-STABLE</strong><br/>
+  <strong>HealthGuard AI Engine v4.2.0-STABLE</strong><br/>
   <em>Senior Tester Verified & Security Hardened</em><br/>
   <em>Powered by NABH Pre-Entry Level Accreditation Standards</em>
 </p>

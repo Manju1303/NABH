@@ -64,9 +64,6 @@ async def submit_form(
         current_user.hospital_id = target_record_id
         db.add(current_user)
 
-    # DRAFT SANITIZATION: Clear the draft since it's now a permanent submission
-    await db.execute(sql_delete(models.HospitalDraft).where(models.HospitalDraft.user_id == current_user.id))
-
     await db.commit()
     return {"status": "success", "id": target_record_id, "results": score_result, "deficiencies": deficiencies}
 
@@ -99,32 +96,7 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db), current_
         })
     return {"total": len(enriched), "records": enriched}
 
-# ── DRAFT ROUTES — declared before /{record_id} parameterized routes ──
-# This prevents FastAPI from misrouting GET /draft to GET /{record_id}
-@router.get("/draft", response_model=dict)
-async def load_draft(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
-    draft = result.scalars().first()
-    if not draft:
-        return {"data": None}
-    return {"data": draft.data}
-
-@router.post("/draft")
-async def save_draft(payload: dict, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
-    draft = result.scalars().first()
-
-    if draft:
-        draft.data = payload
-        db.add(draft)
-    else:
-        new_draft = models.HospitalDraft(user_id=current_user.id, data=payload)
-        db.add(new_draft)
-    
-    await db.commit()
-    return {"status": "success"}
-
-# ── PARAMETERIZED ROUTES (must come after /draft) ──
+# ── PARAMETERIZED ROUTES ──
 @router.patch("/{record_id}", response_model=dict)
 async def update_submission(
     record_id: int, 
