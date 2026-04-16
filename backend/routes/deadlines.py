@@ -2,12 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import datetime, timedelta
-import models, schemas, database
+import models, schemas, database, auth
 
 router = APIRouter(prefix="/api/submissions", tags=["deadlines"])
 
 @router.post("/{record_id}/set-deadline")
-async def set_deadline(record_id: int, payload: schemas.DeadlineCreate, db: AsyncSession = Depends(database.get_db)):
+async def set_deadline(
+    record_id: int,
+    payload: schemas.DeadlineCreate,
+    db: AsyncSession = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)  # Fixed: added auth
+):
     # Validate date
     try:
         deadline_date = datetime.fromisoformat(payload.deadline)
@@ -22,14 +27,18 @@ async def set_deadline(record_id: int, payload: schemas.DeadlineCreate, db: Asyn
         deadline=deadline_date,
         label=payload.label,
         note=payload.note,
-        set_by="hospital_admin"
+        set_by=current_user.username  # Fixed: use actual user not hardcoded string
     )
     db.add(new_deadline)
     await db.commit()
     return {"status": "success", "message": "Deadline set"}
 
 @router.get("/{record_id}/deadlines")
-async def get_deadlines(record_id: int, db: AsyncSession = Depends(database.get_db)):
+async def get_deadlines(
+    record_id: int,
+    db: AsyncSession = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)  # Fixed: added auth
+):
     result = await db.execute(select(models.RemediationDeadline).filter(models.RemediationDeadline.submission_id == record_id))
     deadlines = result.scalars().all()
     

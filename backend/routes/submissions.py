@@ -92,6 +92,7 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db), current_
             "registration_number": rec.registration_number,
             "submitted_at": rec.submitted_at,
             "score": rec.score,
+            "max_score": 100,  # Fixed: normalized score ceiling
             "readiness_percentage": rec.readiness_percentage,
             "is_ready": rec.is_ready,
             "section_scores": rec.section_scores,
@@ -142,6 +143,7 @@ async def delete_submission(record_id: int, db: AsyncSession = Depends(database.
     await db.commit()
     return {"status": "deleted"}
 
+# ── DRAFT ROUTES — must be defined BEFORE /{record_id} to avoid FastAPI shadowing ──
 @router.get("/draft", response_model=dict)
 async def load_draft(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
     result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
