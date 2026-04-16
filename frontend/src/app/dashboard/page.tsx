@@ -31,14 +31,6 @@ const tiles = [
     accent: 'from-blue-500 to-indigo-600'
   },
   {
-    label: 'Committee Decision',
-    description: 'Review recommendations and final decisions from the accreditation committee.',
-    href: '/dashboard/committee',
-    icon: <Users />,
-    border: 'rgba(168, 85, 247, 0.4)',
-    accent: 'from-purple-500 to-pink-500'
-  },
-  {
     label: 'Remarks',
     description: 'View assessor notes, observations and additional remarks on submissions.',
     href: '/dashboard/remarks',

@@ -39,6 +39,14 @@ export default function NeonQCIInferenceMatrix() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
+
+  const handleSave = () => {
+    localStorage.setItem('hg_qci_responses', JSON.stringify(responses));
+    localStorage.setItem('hg_qci_dates', JSON.stringify(validityDates));
+    setSavedToast(true);
+    setTimeout(() => setSavedToast(false), 2500);
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem('hg_qci_responses');
@@ -146,8 +154,10 @@ export default function NeonQCIInferenceMatrix() {
                         </div>
                     </div>
                  </div>
-                 <button className="hidden sm:block px-8 py-3.5 bg-cyan-500 text-black rounded-2xl font-black text-sm shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:bg-cyan-400 transition-all hover:scale-105">
-                    SAVE
+                 <button 
+                    onClick={handleSave}
+                    className="hidden sm:flex items-center gap-2 px-8 py-3.5 bg-cyan-500 text-black rounded-2xl font-black text-sm shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:bg-cyan-400 transition-all hover:scale-105">
+                    {savedToast ? <><CheckCircle className="w-4 h-4" /> SAVED!</> : <><Save className="w-4 h-4" /> SAVE</>}
                  </button>
             </div>
          </div>

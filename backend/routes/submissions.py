@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete as sql_delete
 from typing import List
 import json, csv, io
 from datetime import datetime
@@ -64,8 +65,7 @@ async def submit_form(
         db.add(current_user)
 
     # DRAFT SANITIZATION: Clear the draft since it's now a permanent submission
-    from sqlalchemy import delete
-    await db.execute(delete(models.HospitalDraft).where(models.HospitalDraft.user_id == current_user.id))
+    await db.execute(sql_delete(models.HospitalDraft).where(models.HospitalDraft.user_id == current_user.id))
 
     await db.commit()
     return {"status": "success", "id": target_record_id, "results": score_result, "deficiencies": deficiencies}
@@ -75,7 +75,6 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db), current_
     if current_user.role == "admin":
         query = select(models.HospitalSubmission)
     else:
-        # Filter for hospital admin
         if not current_user.hospital_id:
             return {"total": 0, "records": []}
         query = select(models.HospitalSubmission).filter(models.HospitalSubmission.id == current_user.hospital_id)
@@ -83,7 +82,6 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db), current_
     result = await db.execute(query)
     records = result.scalars().all()
     
-    # ... (rest of the logic) ...
     enriched = []
     for rec in records:
         enriched.append({
@@ -92,7 +90,7 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db), current_
             "registration_number": rec.registration_number,
             "submitted_at": rec.submitted_at,
             "score": rec.score,
-            "max_score": 100,  # Fixed: normalized score ceiling
+            "max_score": 100,  # Normalized score ceiling
             "readiness_percentage": rec.readiness_percentage,
             "is_ready": rec.is_ready,
             "section_scores": rec.section_scores,
@@ -101,6 +99,32 @@ async def list_submissions(db: AsyncSession = Depends(database.get_db), current_
         })
     return {"total": len(enriched), "records": enriched}
 
+# ── DRAFT ROUTES — declared before /{record_id} parameterized routes ──
+# This prevents FastAPI from misrouting GET /draft to GET /{record_id}
+@router.get("/draft", response_model=dict)
+async def load_draft(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
+    draft = result.scalars().first()
+    if not draft:
+        return {"data": None}
+    return {"data": draft.data}
+
+@router.post("/draft")
+async def save_draft(payload: dict, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
+    draft = result.scalars().first()
+
+    if draft:
+        draft.data = payload
+        db.add(draft)
+    else:
+        new_draft = models.HospitalDraft(user_id=current_user.id, data=payload)
+        db.add(new_draft)
+    
+    await db.commit()
+    return {"status": "success"}
+
+# ── PARAMETERIZED ROUTES (must come after /draft) ──
 @router.patch("/{record_id}", response_model=dict)
 async def update_submission(
     record_id: int, 
@@ -108,7 +132,6 @@ async def update_submission(
     db: AsyncSession = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_active_user)
 ):
-    # Security: Only Admin or the specific Hospital Admin can update
     if current_user.role != "admin" and current_user.hospital_id != record_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this record")
 
@@ -117,7 +140,6 @@ async def update_submission(
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
 
-    # Re-calculate score and deficiencies with new data
     score_result = calculate_nabh_score(form_data)
     deficiencies = evaluate_deficiencies(form_data.model_dump())
 
@@ -143,33 +165,8 @@ async def delete_submission(record_id: int, db: AsyncSession = Depends(database.
     await db.commit()
     return {"status": "deleted"}
 
-# ── DRAFT ROUTES — must be defined BEFORE /{record_id} to avoid FastAPI shadowing ──
-@router.get("/draft", response_model=dict)
-async def load_draft(db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
-    draft = result.scalars().first()
-    if not draft:
-        return {"data": None}
-    return {"data": draft.data}
-
-@router.post("/draft")
-async def save_draft(payload: dict, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    result = await db.execute(select(models.HospitalDraft).filter(models.HospitalDraft.user_id == current_user.id))
-    draft = result.scalars().first()
-
-    if draft:
-        draft.data = payload
-        db.add(draft)
-    else:
-        new_draft = models.HospitalDraft(user_id=current_user.id, data=payload)
-        db.add(new_draft)
-    
-    await db.commit()
-    return {"status": "success"}
-
 @router.get("/{record_id}/report")
 async def download_audit_report(record_id: int, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
-    # Only Admin or Committee can download full audit reports
     if current_user.role not in ["admin", "committee"]:
         raise HTTPException(status_code=403, detail="Not authorized to download audit reports")
 
