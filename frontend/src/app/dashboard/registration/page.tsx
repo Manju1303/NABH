@@ -65,39 +65,23 @@ export default function ComplianceForm() {
     accredType: 'Entry Level', prevAccred: false, prevAccredDate: '',
   });
 
-  // Load from Supabase on mount
+  // Load from localStorage on mount
   useEffect(() => {
-    const fetchDraft = async () => {
+    const saved = localStorage.getItem('nabh_registration_data');
+    if (saved) {
       try {
-        const res = await api.get('/api/submissions/draft');
-        if (res.data.data) {
-          setFd(prev => ({ ...prev, ...res.data.data }));
-        }
+        setFd(JSON.parse(saved));
       } catch (e) {
-        console.error("Failed to load cloud draft", e);
-        // Fallback to local if server is down
-        const saved = localStorage.getItem('nabh_registration_data');
-        if (saved) setFd(JSON.parse(saved));
+        console.error("Failed to parse saved form data", e);
       }
-    };
-    
-    fetchDraft();
+    }
     const savedStep = localStorage.getItem('nabh_registration_step');
     if (savedStep) setStep(parseInt(savedStep));
   }, []);
 
-  // Sync to Supabase periodically (Autosave)
+  // Save to localStorage whenever data changes
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      try {
-        await api.post('/api/submissions/draft', fd);
-        localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
-      } catch (e) {
-        console.error("Autosave failed", e);
-      }
-    }, 2000); // 2 second debounce
-
-    return () => clearTimeout(timer);
+    localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
   }, [fd]);
 
   useEffect(() => {
@@ -106,16 +90,10 @@ export default function ComplianceForm() {
 
   const updateFd = (updates: any) => setFd(prev => ({ ...prev, ...updates }));
 
-  const handleSave = async () => {
-    setLoading(true);
-    try {
-      await api.post('/api/submissions/draft', fd);
-      alert("Progress synced to Cloud Matrix (Supabase)!");
-    } catch (e) {
-      alert("Sync failed. Check connection.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSave = () => {
+    localStorage.setItem('nabh_registration_data', JSON.stringify(fd));
+    localStorage.setItem('nabh_registration_step', step.toString());
+    alert("Progress saved locally!");
   };
 
   const sectionProgress = useMemo(() => {
@@ -293,11 +271,8 @@ export default function ComplianceForm() {
              </div>
              <div className="hidden sm:flex items-center gap-4">
                  <button 
-                    onClick={async () => { 
-                        if(confirm('WIPE ALL DATA? This will clear your current form and Cloud Matrix data.')) { 
-                            try {
-                                await api.post('/api/submissions/draft', {}); // Clear cloud
-                            } catch(e) {}
+                    onClick={() => { 
+                        if(confirm('WIPE ALL DATA? This will clear your current form data.')) { 
                             localStorage.removeItem('nabh_registration_data'); 
                             localStorage.removeItem('nabh_registration_step'); 
                             window.location.reload(); 
