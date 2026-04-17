@@ -13,18 +13,24 @@ IS_PRODUCTION = os.getenv("RENDER", "") != ""
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Normalize to asyncpg driver for both postgres:// and postgresql:// schemes
+    DATABASE_URL = DATABASE_URL.strip() # Remove hidden spaces
+    
+    # Normalize to asyncpg driver
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
     elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
     
-    # Ensure we use port 5432 (Direct Connection) instead of 6543 (Pooler) 
-    # as 6543 is often unreachable from Render's network environment.
+    # Force Port 5432 for stability on Render
     if ":6543" in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace(":6543", ":5432")
     
     DB_URL = DATABASE_URL
+    
+    # Safe logging for debugging
+    from urllib.parse import urlparse
+    parsed = urlparse(DATABASE_URL.replace("postgresql+asyncpg://", "http://"))
+    logger.info(f"[DB] Target Host: {parsed.hostname}:{parsed.port or 5432}")
     logger.info(f"[DB] Using cloud PostgreSQL (Supabase)")
 else:
     # Fallback to local SQLite
