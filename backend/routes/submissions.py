@@ -59,8 +59,8 @@ async def submit_form(
         await db.flush() # Get the new ID
         target_record_id = new_submission.id
 
-    # AUTO-BRIDGE: Link user to this hospital if not already linked
-    if not current_user.hospital_id:
+    # AUTO-BRIDGE: Link user to this hospital if not already linked and user is NOT admin
+    if current_user.role != "admin" and not current_user.hospital_id:
         current_user.hospital_id = target_record_id
         db.add(current_user)
 

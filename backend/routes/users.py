@@ -42,3 +42,36 @@ async def create_user_member(
 @router.get("/me", response_model=schemas.UserOut)
 async def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
+
+@router.get("", response_model=list[schemas.UserOut])
+async def list_users(
+    db: AsyncSession = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    result = await db.execute(select(models.User))
+    return result.scalars().all()
+
+@router.patch("/{user_id}", response_model=schemas.UserOut)
+async def update_user(
+    user_id: int,
+    user_update: dict, # Simplified update for linking hospital
+    db: AsyncSession = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can update users")
+        
+    result = await db.execute(select(models.User).filter(models.User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if "hospital_id" in user_update:
+        user.hospital_id = user_update["hospital_id"]
+        
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user

@@ -9,6 +9,10 @@ router = APIRouter(prefix="/api/remediation", tags=["Remediation"])
 
 @router.get("/{submission_id}", response_model=List[dict])
 async def get_remediation_steps(submission_id: int, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    # Security: Ensure user can only see their own hospital's remediation steps
+    if current_user.role != "admin" and current_user.hospital_id != submission_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view these remediation steps")
+
     result = await db.execute(select(models.RemediationStep).filter(models.RemediationStep.submission_id == submission_id))
     steps = result.scalars().all()
     
