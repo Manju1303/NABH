@@ -2,6 +2,12 @@ import axios from 'axios';
 
 let API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
+// 🔧 URL FIX: Fix known Render deployment URL mismatch
+if (API_BASE_URL === 'https://nabh-backend.onrender.com') {
+  console.info('ℹ️  Correcting backend URL from nabh-backend.onrender.com to nabh-backend-i24k.onrender.com');
+  API_BASE_URL = 'https://nabh-backend-i24k.onrender.com';
+}
+
 // Warn if using development default
 if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_API_URL) {
   console.warn(
