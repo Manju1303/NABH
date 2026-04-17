@@ -16,10 +16,15 @@ IS_PRODUCTION = os.getenv("RENDER", "") != ""
 
 if not SECRET_KEY:
     if IS_PRODUCTION:
-        # We log a critical message instead of crashing, to allow 'Quick Start' users to see the UI.
-        # But we use the fallback key so the app still starts.
-        print("CRITICAL: SECRET_KEY environment variable is NOT set! Using fallback dev key.")
-    SECRET_KEY = os.getenv("FALLBACK_KEY", "nabh_dev_key_change_me")
+        raise RuntimeError(
+            "CRITICAL ERROR: SECRET_KEY environment variable is NOT set in production!\n"
+            "Please set the SECRET_KEY variable in your Render dashboard before deploying.\n"
+            "Generate a secure key with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+        )
+    # Development fallback
+    SECRET_KEY = "nabh_dev_key_change_me"
+    import warnings
+    warnings.warn("WARNING: Using development SECRET_KEY. Never use in production!")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Reduced from 600 to 60 for security

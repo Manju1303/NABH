@@ -34,16 +34,17 @@ else:
 
 # Connection arguments for Supabase PgBouncer (Transaction Pooler)
 connect_args = {}
-if DATABASE_URL:
-    connect_args["prepared_statement_cache_size"] = 0
+if DATABASE_URL and "localhost" not in DATABASE_URL.lower():
+    # For Supabase/PgBouncer: disable prepared statements to avoid connection pooler issues
+    connect_args["server_settings"] = {"application_name": "nabh_api"}
 
 engine = create_async_engine(
     DB_URL,
     echo=False,
     connect_args=connect_args,
     # High-Performance Settings
-    pool_size=10 if DATABASE_URL else 5, 
-    max_overflow=20 if DATABASE_URL else 10,
+    pool_size=5 if DATABASE_URL else 3, 
+    max_overflow=10 if DATABASE_URL else 5,
     pool_recycle=300,
     pool_pre_ping=True,
     pool_use_lifo=True,

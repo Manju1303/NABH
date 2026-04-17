@@ -38,19 +38,24 @@ app = FastAPI(
 )
 
 # ── CORS ──
-_default_origins = "http://localhost:3000,http://127.0.0.1:3000,https://nabh.vercel.app"
+_default_origins = "http://localhost:3000,http://127.0.0.1:3000"
 ALLOWED_ORIGINS = [
     o.strip() for o in os.getenv("ALLOWED_ORIGINS", _default_origins).split(",") if o.strip()
 ]
 
-# Intelligence: Always trust nabh.vercel.app even if environment variable is missing
-if "https://nabh.vercel.app" not in ALLOWED_ORIGINS:
+if IS_PRODUCTION:
+    # In production, be strict about CORS
+    if not os.getenv("ALLOWED_ORIGINS"):
+        logger.warning("⚠️  ALLOWED_ORIGINS not set in Render! CORS may block your frontend. Set it in Render dashboard.")
+else:
+    # In development, be permissive
     ALLOWED_ORIGINS.append("https://nabh.vercel.app")
+    ALLOWED_ORIGINS.append("https://localhost:3000")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.(vercel\.app|onrender\.com)", # Support Vercel and Render frontends
+    allow_origin_regex=r"https://.*\.(vercel\.app|onrender\.com)" if IS_PRODUCTION else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

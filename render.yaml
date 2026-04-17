@@ -4,9 +4,27 @@ services:
     env: docker
     dockerContext: backend
     dockerfilePath: Dockerfile
-    plan: free # No disk needed — uses Supabase cloud PostgreSQL
+    plan: free # Free tier - upgrade if needed
     envVars:
+      # DATABASE: Your Supabase PostgreSQL connection string (Session Pooler)
       - key: DATABASE_URL
         sync: false
+      # CORS: Comma-separated list of allowed frontend origins
+      # REQUIRED: Set to your Vercel frontend URL, e.g., https://yourapp.vercel.app
       - key: ALLOWED_ORIGINS
+        sync: false
+      # SECURITY: Random secret key for JWT token generation (generate new value)
+      # CRITICAL: Must be set before deployment
+      - key: SECRET_KEY
+        sync: false
+      # SYSTEM: Safety key for factory-reset endpoint (optional, for development)
+      - key: SYSTEM_RESET_KEY
+        sync: false
+      # RENDER: Auto-set by Render platform, indicates production environment
+      - key: RENDER
+        value: "true"
+        sync: false
+      # PORT: Auto-set by Render, do not change
+      - key: PORT
+        value: "10000"
         sync: false
