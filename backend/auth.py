@@ -21,13 +21,15 @@ if not SECRET_KEY:
             "Please set the SECRET_KEY variable in your Render dashboard before deploying.\n"
             "Generate a secure key with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
         )
-    if len(SECRET_KEY) < 32 and IS_PRODUCTION:
-        import warnings
-        warnings.warn("SECURITY WARNING: SECRET_KEY is shorter than 32 characters. Use a stronger key!")
     # Development fallback
     SECRET_KEY = "nabh_dev_key_change_me"
     import warnings
     warnings.warn("WARNING: Using development SECRET_KEY. Never use in production!")
+
+# Check key strength
+if IS_PRODUCTION and len(SECRET_KEY) < 32:
+    import warnings
+    warnings.warn("SECURITY WARNING: SECRET_KEY is shorter than 32 characters. Use a stronger key!")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Reduced from 600 to 60 for security

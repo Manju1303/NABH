@@ -72,6 +72,8 @@ def test_full_compliance_score():
     
     assert result["total_score"] == 100
     assert result["is_ready"] is True
+    assert "assessment_mode" in result
+    assert result["statutory_passed"] is True
 
 def test_zero_compliance_score():
     data = get_minimal_form_data()
