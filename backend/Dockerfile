@@ -23,5 +23,5 @@ COPY . .
 # Expose the port Render provides
 EXPOSE 8000
 
-# Start command (using gunicorn for production stability)
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000"]
+# Start command (using shell form to allow $PORT expansion)
+CMD gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT
