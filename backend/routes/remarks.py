@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 import models, schemas, database, auth
 
 router = APIRouter(prefix="/api/submissions", tags=["remarks"])
@@ -34,7 +34,7 @@ async def add_remark(record_id: int, payload: schemas.RemarkCreate, db: AsyncSes
         role=payload.role,
         message=payload.message,
         category=payload.category,
-        date=datetime.utcnow()
+        date=datetime.now(timezone.utc)
     )
     db.add(new_remark)
     await db.commit()

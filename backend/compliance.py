@@ -5,7 +5,7 @@ When hospital values fall below thresholds, deficiencies are flagged
 with remediation deadlines.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 # ══════════════════════════════════════════════════════
@@ -311,7 +311,7 @@ def evaluate_deficiencies(form_data: dict) -> list[dict]:
                 "reasoning": threshold.get("reason", "Standard requirement not met."),
                 "message": f"Validated: {actual_value} {threshold['unit']} (Required: {threshold['min_value']} {threshold['unit']})",
                 "suggested_deadline_days": deadline_days,
-                "suggested_deadline": (datetime.now() + timedelta(days=deadline_days)).isoformat(),
+                "suggested_deadline": (datetime.now(timezone.utc) + timedelta(days=deadline_days)).isoformat(),
             })
 
     # Check mandatory booleans
@@ -335,7 +335,7 @@ def evaluate_deficiencies(form_data: dict) -> list[dict]:
                 "reasoning": req.get("reason", "Mandatory requirement not met."),
                 "message": f"Validation Failed: {req['label']} is missing or not established.",
                 "suggested_deadline_days": deadline_days,
-                "suggested_deadline": (datetime.now() + timedelta(days=deadline_days)).isoformat(),
+                "suggested_deadline": (datetime.now(timezone.utc) + timedelta(days=deadline_days)).isoformat(),
             })
 
     # Sort by severity: critical first, then high, then medium

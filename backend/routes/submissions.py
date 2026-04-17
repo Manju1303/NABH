@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from sqlalchemy import delete as sql_delete
 from typing import List
 import json, csv, io
-from datetime import datetime
+from datetime import datetime, timezone
 
 import models, schemas, database, auth
 from scoring import calculate_nabh_score
@@ -121,7 +121,7 @@ async def update_submission(
     record.section_scores = score_result["section_scores"]
     record.deficiencies = deficiencies
     record.form_data = form_data.model_dump()
-    record.updated_at = datetime.utcnow()
+    record.updated_at = datetime.now(timezone.utc)
 
     db.add(record)
     await db.commit()
@@ -149,7 +149,7 @@ async def download_audit_report(record_id: int, db: AsyncSession = Depends(datab
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["NABH FINAL AUDIT REPORT", datetime.utcnow().strftime("%Y-%m-%d")])
+    writer.writerow(["NABH FINAL AUDIT REPORT", datetime.now(timezone.utc).strftime("%Y-%m-%d")])
     writer.writerow([])
     writer.writerow(["Hospital Name", record.hospital_name])
     writer.writerow(["Reg Number", record.registration_number])

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import models, schemas, database, auth
 
 router = APIRouter(prefix="/api/submissions", tags=["deadlines"])
@@ -16,7 +16,12 @@ async def set_deadline(
     # Validate date
     try:
         deadline_date = datetime.fromisoformat(payload.deadline)
-        if deadline_date < datetime.now():
+        # Ensure we compare with aware datetime if input is aware
+        now = datetime.now(timezone.utc)
+        if deadline_date.tzinfo is None:
+            deadline_date = deadline_date.replace(tzinfo=timezone.utc)
+            
+        if deadline_date < now:
             raise HTTPException(status_code=400, detail="Deadline must be a future date.")
     except ValueError:
          raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format (YYYY-MM-DD).")
@@ -42,7 +47,7 @@ async def get_deadlines(
     result = await db.execute(select(models.RemediationDeadline).filter(models.RemediationDeadline.submission_id == record_id))
     deadlines = result.scalars().all()
     
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     alerts = []
     for d in deadlines:
         days_remaining = (d.deadline - now).days
