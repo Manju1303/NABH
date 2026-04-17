@@ -19,6 +19,11 @@ if DATABASE_URL:
     elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
     
+    # Ensure we use port 5432 (Direct Connection) instead of 6543 (Pooler) 
+    # as 6543 is often unreachable from Render's network environment.
+    if ":6543" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace(":6543", ":5432")
+    
     DB_URL = DATABASE_URL
     logger.info(f"[DB] Using cloud PostgreSQL (Supabase)")
 else:
@@ -27,17 +32,21 @@ else:
     DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
     logger.info(f"[DB] Using local SQLite at: {DB_PATH}")
 
-# Connection arguments for Supabase PgBouncer (Transaction Pooler)
+# Connection arguments for Supabase
 connect_args = {}
 if DATABASE_URL and "localhost" not in DATABASE_URL.lower():
-    # For Supabase/PgBouncer: disable prepared statements to avoid connection pooler issues
+    import ssl
+    # For Supabase/asyncpg: Use a standard SSL context
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    connect_args["ssl"] = ctx
     connect_args["server_settings"] = {"application_name": "nabh_api"}
 
 engine = create_async_engine(
     DB_URL,
     echo=False,
     connect_args=connect_args,
-    # High-Performance Settings
     pool_size=5 if DATABASE_URL else 3, 
     max_overflow=10 if DATABASE_URL else 5,
     pool_recycle=300,
