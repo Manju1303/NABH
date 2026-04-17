@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+let API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+
+console.log(`[HealthGuard API] Targeting: ${API_BASE_URL}`);
 
 // Create a secured axios instance
 const api = axios.create({

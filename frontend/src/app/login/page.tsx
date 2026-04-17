@@ -9,6 +9,15 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isOnline, setIsOnline] = useState<boolean | null>(null);
+
+  useState(() => {
+    // Ping check
+    fetch(`${API_BASE_URL}/`)
+      .then(r => setIsOnline(r.ok))
+      .catch(() => setIsOnline(false));
+    return;
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +42,7 @@ export default function Login() {
         setError('Invalid credentials. Please check your email/password.');
       }
     } catch (err) {
-      setError('Connection failed. Is the backend running?');
+      setError(`Connection failed. Awaiting backend at ${API_BASE_URL}...`);
     }
   };
 
@@ -48,6 +57,12 @@ export default function Login() {
             <h1 className="text-lg font-semibold tracking-wide text-white">NABH</h1>
             <p className="text-[11px] text-white/80 -mt-0.5">National Accreditation Board for Hospitals & Healthcare Providers</p>
           </div>
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+             <div className={`w-2 h-2 rounded-full ${isOnline === true ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : isOnline === false ? 'bg-rose-500 shadow-[0_0_10px_#f43f5e]' : 'bg-slate-500 animate-pulse'}`}></div>
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {isOnline === true ? 'Backend Online' : isOnline === false ? 'Backend Offline' : 'Checking Connectivity...'}
+             </span>
         </div>
       </header>
 
