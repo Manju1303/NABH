@@ -19,11 +19,6 @@ if DATABASE_URL:
     elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
     
-    # Ensure SSL for Supabase/Cloud PostgreSQL
-    if "sslmode" not in DATABASE_URL:
-        separator = "&" if "?" in DATABASE_URL else "?"
-        DATABASE_URL += f"{separator}sslmode=require"
-    
     DB_URL = DATABASE_URL
     logger.info(f"[DB] Using cloud PostgreSQL (Supabase)")
 else:
