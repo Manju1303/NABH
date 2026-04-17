@@ -27,10 +27,13 @@ if DATABASE_URL:
     
     DB_URL = DATABASE_URL
     
-    # Safe logging for debugging
+    # Force print for Render logs visibility
     from urllib.parse import urlparse
     parsed = urlparse(DATABASE_URL.replace("postgresql+asyncpg://", "http://"))
-    logger.info(f"[DB] Target Host: {parsed.hostname}:{parsed.port or 5432}")
+    print(f">>> [DEBUG DB] Target Host: {parsed.hostname}")
+    print(f">>> [DEBUG DB] Target Port: {parsed.port or 5432}")
+    print(f">>> [DEBUG DB] URL Scheme: {DATABASE_URL.split(':')[0]}")
+    
     logger.info(f"[DB] Using cloud PostgreSQL (Supabase)")
 else:
     # Fallback to local SQLite
