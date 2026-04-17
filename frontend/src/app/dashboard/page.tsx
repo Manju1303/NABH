@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ClipboardList, FileCheck, Users, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles, Download, Loader2 } from 'lucide-react';
+import { ClipboardList, FileCheck, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles, Download, Loader2 } from 'lucide-react';
 import api, { API_BASE_URL, getMe } from '@/lib/api';
 
 const tiles = [

@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
-import os
+import os, logging
 from dotenv import load_dotenv
+
+logger = logging.getLogger("nabh-api")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,12 +19,12 @@ if DATABASE_URL:
     elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
     DB_URL = DATABASE_URL
-    print(f"[DB] Using cloud PostgreSQL (Supabase)")
+    logger.info(f"[DB] Using cloud PostgreSQL (Supabase)")
 else:
     # Fallback to local SQLite
     DB_PATH = os.getenv("DB_PATH", "./nabh.db")
     DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
-    print(f"[DB] Using local SQLite at: {DB_PATH}")
+    logger.info(f"[DB] Using local SQLite at: {DB_PATH}")
 
 # Connection arguments for Supabase PgBouncer (Transaction Pooler)
 connect_args = {}
@@ -72,4 +74,4 @@ async def init_db():
                 )
                 session.add(admin_user)
                 await session.commit()
-                print("[DB] Created initial admin user for development.")
+                logger.info("[DB] Created initial admin user for development.")
