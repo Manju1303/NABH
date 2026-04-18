@@ -21,10 +21,10 @@ if not SECRET_KEY:
             "Please set the SECRET_KEY variable in your Render dashboard before deploying.\n"
             "Generate a secure key with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
         )
-    # Development fallback
-    SECRET_KEY = "nabh_dev_key_change_me"
+    # Development fallback - Use a more complex string to prevent accidental production reuse
+    SECRET_KEY = os.getenv("DEV_SECRET_KEY", "nabh_local_development_only_secret_998877665544332211")
     import warnings
-    warnings.warn("WARNING: Using development SECRET_KEY. Never use in production!")
+    warnings.warn("CRITICAL: Using development SECRET_KEY. This is only safe for localhost.")
 
 # Check key strength
 if IS_PRODUCTION and len(SECRET_KEY) < 32:

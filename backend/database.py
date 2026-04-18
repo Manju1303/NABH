@@ -47,8 +47,14 @@ if DATABASE_URL and "localhost" not in DATABASE_URL.lower():
     import ssl
     # For Supabase/asyncpg: Use a standard SSL context
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
+    
+    # Allow insecure SSL only if explicitly requested via environment variable
+    # This is often needed for Supabase Free Tier on certain platforms
+    if os.getenv("DB_SSL_NO_VERIFY", "true").lower() == "true":
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        logger.warning("DB SECURITY: SSL certificate verification is DISABLED (DB_SSL_NO_VERIFY=true)")
+    
     connect_args["ssl"] = ctx
     connect_args["server_settings"] = {"application_name": "nabh_api"}
 

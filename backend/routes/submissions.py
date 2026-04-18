@@ -128,11 +128,23 @@ async def update_submission(
     return {"status": "updated", "results": score_result, "deficiencies": deficiencies}
 
 @router.delete("/{record_id}")
-async def delete_submission(record_id: int, db: AsyncSession = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_active_user)):
+async def delete_submission(
+    record_id: int, 
+    db: AsyncSession = Depends(database.get_db), 
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     result = await db.execute(select(models.HospitalSubmission).filter(models.HospitalSubmission.id == record_id))
     record = result.scalars().first()
+    
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
+        
+    # SECURITY FIX: Ensure user has permission to delete this record
+    if current_user.role != "admin" and record.id != current_user.hospital_id:
+        import logging
+        logging.getLogger("nabh-api").warning(f"UNAUTHORIZED DELETE ATTEMPT: User {current_user.username} tried to delete record {record_id}")
+        raise HTTPException(status_code=403, detail="Not authorized to delete this record")
+        
     await db.delete(record)
     await db.commit()
     return {"status": "deleted"}
