@@ -92,15 +92,67 @@ export default function NeonQCIInferenceMatrix() {
     });
 
     const totalQuestions = CHECKLIST_FILES.reduce((a, f) => a + f.questions.length, 0);
-    const score = answeredCount > 0 ? (totalScore / answeredCount) * 100 : 0;
+    
+    // Weighted scoring: Penalize critical items more heavily
+    let baseScore = answeredCount > 0 ? (totalScore / answeredCount) * 100 : 0;
+    
+    // Apply Statutory Penalty
+    const statFiles = CHECKLIST_FILES.filter(f => f.category === 'STAT');
+    let statGaps = 0;
+    statFiles.forEach(f => {
+      f.questions.forEach(q => {
+        if (responses[q.id] === 0 || (responses[q.id] === 1 && q.hasValidity && (!validityDates[q.id] || validityDates[q.id] < today))) {
+          statGaps++;
+        }
+      });
+    });
+
+    // Score deduction: -5% per statutory gap, -1% per other gap
+    const otherGaps = (answeredCount - totalScore) - statGaps;
+    let enhancedScore = baseScore - (statGaps * 5) - (otherGaps * 1);
+    enhancedScore = Math.max(0, Math.min(100, enhancedScore));
+
     let status = 'INITIALSCAN';
     let color = '#FF00E5';
     if (answeredCount > 0) {
-      if (score < 50) { status = 'CRIT_DEFI'; color = '#EF4444'; }
-      else if (score < 80) { status = 'MOD_READY'; color = '#00F2FF'; }
+      if (enhancedScore < 50 || statGaps > 0) { status = 'CRIT_DEFI'; color = '#EF4444'; }
+      else if (enhancedScore < 80) { status = 'MOD_READY'; color = '#00F2FF'; }
       else { status = 'READY_SYNC'; color = '#22C55E'; }
     }
-    return { total: totalQuestions, answered: answeredCount, yes: totalScore, no: answeredCount - totalScore, expired: expiredCount, score, status, color };
+    return { total: totalQuestions, answered: answeredCount, yes: totalScore, no: answeredCount - totalScore, expired: expiredCount, score: enhancedScore, status, color };
+  }, [responses, validityDates]);
+
+  const gapAnalysisDetailed = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const gaps: { file: string, reason: string, severity: 'CRITICAL' | 'HIGH' }[] = [];
+    
+    CHECKLIST_FILES.forEach(f => {
+      f.questions.forEach(q => {
+        const resp = responses[q.id];
+        let isGap = false;
+        let reason = '';
+        
+        if (resp === 0) {
+          isGap = true;
+          reason = q.text;
+        } else if (resp === 1 && q.hasValidity) {
+          const date = validityDates[q.id];
+          if (!date || date < today) {
+            isGap = true;
+            reason = `${q.text} (Expired/Missing Date)`;
+          }
+        }
+        
+        if (isGap) {
+          gaps.push({
+            file: f.name,
+            reason: reason,
+            severity: f.category === 'STAT' ? 'CRITICAL' : 'HIGH'
+          });
+        }
+      });
+    });
+    return gaps;
   }, [responses, validityDates]);
 
   const gapAnalysis = useMemo(() => {
@@ -108,7 +160,6 @@ export default function NeonQCIInferenceMatrix() {
     return CHECKLIST_FILES.filter(f =>
       f.questions.some(q => {
         if (responses[q.id] === 0) return true;
-        // Yes on a validity question but expired/missing date = gap
         if (responses[q.id] === 1 && q.hasValidity) {
           const date = validityDates[q.id];
           return !date || date < today;
@@ -405,16 +456,27 @@ export default function NeonQCIInferenceMatrix() {
                                  {/* Major Issue Reason */}
                                  <div className="mt-12 p-8 bg-black/40 rounded-[40px] border border-white/5 animate-in fade-in duration-1000">
                                      <h5 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                                         <AlertTriangle className="w-4 h-4" /> Major score reduction factor
+                                         <AlertTriangle className="w-4 h-4" /> Major score reduction factors
                                      </h5>
-                                     <p className="text-xl font-black text-white tracking-tight">
-                                         {gapAnalysis.length > 0 
-                                            ? `STATUTORY_GAPS: Found ${gapAnalysis.length} missing regulatory licenses (Fire/BMW/PCB) which are mandatory for SHCO Entry Level.`
-                                            : stats.score < 100 
-                                            ? "PROCESS_INCOMPLETION: Standard operational documentation and staff training evidence markers are missing in several chapters."
-                                            : "NOMINAL_SYNC: High-integrity match with accreditation requirements detected."
-                                         }
-                                     </p>
+                                     <div className="space-y-3">
+                                         {gapAnalysisDetailed.length > 0 ? (
+                                             gapAnalysisDetailed.slice(0, 4).map((gap, i) => (
+                                                 <div key={i} className="flex items-start gap-3">
+                                                     <div className={`w-1.5 h-1.5 rounded-full mt-2 shrink-0 ${gap.severity === 'CRITICAL' ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' : 'bg-orange-500'}`}></div>
+                                                     <p className="text-sm sm:text-lg font-black text-white tracking-tight leading-tight">
+                                                         <span className={gap.severity === 'CRITICAL' ? 'text-red-400' : 'text-orange-400'}>{gap.severity}:</span> {gap.reason}
+                                                     </p>
+                                                 </div>
+                                             ))
+                                         ) : stats.score < 100 ? (
+                                             <p className="text-xl font-black text-white tracking-tight">PROCESS_INCOMPLETION: Standard operational documentation and staff training evidence markers are missing in several chapters.</p>
+                                         ) : (
+                                             <p className="text-xl font-black text-white tracking-tight text-cyan-400">NOMINAL_SYNC: High-integrity match with accreditation requirements detected.</p>
+                                         )}
+                                         {gapAnalysisDetailed.length > 4 && (
+                                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-4">... AND {gapAnalysisDetailed.length - 4} OTHER DEFICIENCIES</p>
+                                         )}
+                                     </div>
                                  </div>
                             </div>
                         </div>
