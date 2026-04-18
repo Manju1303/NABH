@@ -81,8 +81,18 @@ export default function HospitalDashboard() {
     setDownloading(true);
     try {
       const token = localStorage.getItem('nabh_token');
-      // Use the actual hospital_id or fallback to 1 for admins/demo
-      const targetId = user?.hospital_id || 1; 
+      const targetId = user?.hospital_id;
+      if (!targetId && user?.role !== 'admin') {
+         alert('Complete your registration first to generate a report.');
+         setDownloading(false);
+         return;
+      }
+
+      // If admin and no hospital_id, we need to pick one or tell them to go to Results
+      if (!targetId && user?.role === 'admin') {
+         window.location.href = '/dashboard/results';
+         return;
+      }
 
       const res = await fetch(`${API_BASE_URL}/api/reports/download/${targetId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -98,7 +108,7 @@ export default function HospitalDashboard() {
         a.click();
         a.remove();
       } else {
-        alert('Could not download report. Make sure you have submitted the registration form.');
+        alert('Could not download report. Please check the Assessment Results page for details.');
       }
     } catch (e) {
       alert('Network error while downloading report.');

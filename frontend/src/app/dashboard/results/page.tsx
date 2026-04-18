@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import api, { API_BASE_URL } from '@/lib/api';
-import { ArrowLeft, TrendingUp, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { ArrowLeft, TrendingUp, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, AlertCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface Deficiency {
