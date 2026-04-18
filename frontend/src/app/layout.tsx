@@ -6,8 +6,17 @@ import GlitterCursor from "@/components/GlitterCursor";
 const roboto = Roboto({ subsets: ["latin"], weight: ["300", "400", "500", "700"] });
 
 export const metadata: Metadata = {
-  title: "HealthGuard AI | Professional Accreditation & Compliance Platform",
+  title: "NABH Compliance Engine | Professional Accreditation",
   description: "Advanced hospital accreditation compliance and predictive analysis platform.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "NABH Compliance",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({

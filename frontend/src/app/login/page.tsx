@@ -1,13 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Building2, Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isOnline, setIsOnline] = useState<boolean | null>(null);
 
@@ -95,9 +96,23 @@ export default function Login() {
               <div>
                 <label className="hg-label">Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#BDBDBD' }} />
-                  <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                    className="hg-input" style={{ paddingLeft: '44px' }} placeholder="Enter password" />
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#64748B' }} />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    required 
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)}
+                    className="hg-input" 
+                    style={{ paddingLeft: '44px', paddingRight: '44px' }} 
+                    placeholder="Enter password" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
               <button type="submit" className="hg-btn-primary w-full py-3 text-base mt-2 flex items-center justify-center gap-2">
