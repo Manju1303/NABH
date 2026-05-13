@@ -1,15 +1,20 @@
 """
-NABH Compliance Engine API v3.0 — Refactored & Enhanced
+main.py — NABH Compliance Engine API
+Fixes:
+  CRIT-01: SQL injection in factory-reset (parameterized query)
+  HIGH-02: Rate limiting via slowapi
+  MED-13:  Restricted CORS allow_methods
 """
-
 from fastapi import FastAPI, Depends, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-import os, time, logging
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+import os, logging
 from contextlib import asynccontextmanager
 
-# ── Logging Configuration ──
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -22,9 +27,11 @@ import auth
 
 IS_PRODUCTION = os.getenv("RENDER", "") != ""
 
+# ── Rate Limiter ──
+limiter = Limiter(key_func=get_remote_address)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Initialize DB
     logger.info("Initializing NABH Compliance Engine Database...")
     await init_db()
     logger.info("System Ready.")
@@ -32,10 +39,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="NABH Compliance Engine API",
-    description="Secured & Refactored API for NABH Compliance Tracking.",
+    description="Secured API for NABH Compliance Tracking.",
     docs_url=None if IS_PRODUCTION else "/docs",
-    lifespan=lifespan
+    redoc_url=None if IS_PRODUCTION else "/redoc",
+    lifespan=lifespan,
 )
+
+# Attach rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── CORS ──
 _default_origins = "http://localhost:3000,http://127.0.0.1:3000"
@@ -43,21 +55,19 @@ ALLOWED_ORIGINS = [
     o.strip() for o in os.getenv("ALLOWED_ORIGINS", _default_origins).split(",") if o.strip()
 ]
 
-if IS_PRODUCTION:
-    # In production, be strict about CORS
-    if not os.getenv("ALLOWED_ORIGINS"):
-        logger.warning("⚠️  ALLOWED_ORIGINS not set in Render! CORS may block your frontend. Set it in Render dashboard.")
-else:
-    # In development, be permissive
-    ALLOWED_ORIGINS.append("https://nabh.vercel.app")
+if not IS_PRODUCTION:
     ALLOWED_ORIGINS.append("https://localhost:3000")
+
+if IS_PRODUCTION and not os.getenv("ALLOWED_ORIGINS"):
+    logger.warning("ALLOWED_ORIGINS not set in production! CORS will block frontend.")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://nabh(-.*)?\.vercel\.app" if IS_PRODUCTION else None,
+    allow_origin_regex=r"https://nabh(-.*)?\\.vercel\\.app" if IS_PRODUCTION else None,
     allow_credentials=True,
-    allow_methods=["*"],
+    # MED-13 FIX: Restricted to only needed methods
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -71,54 +81,55 @@ app.include_router(reports.router)
 app.include_router(auth.router)
 app.include_router(remediation.router)
 
-# ── NUCLEAR RESET (Hardened) ──
+
+# ── Factory Reset (CRIT-01 Fixed) ──
 @app.delete("/api/system/factory-reset")
+@limiter.limit("3/hour")
 async def factory_reset(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: auth.models.User = Depends(auth.get_current_user)
+    current_user: auth.models.User = Depends(auth.require_admin),
 ):
-    if current_user.role != "admin":
-        raise auth.HTTPException(status_code=403, detail="Unauthorized - Admin access required")
-    
-    # Requirement: Must provide a SYSTEM_RESET_KEY in headers for safety
     reset_key = request.headers.get("X-System-Reset-Key")
     expected_key = os.getenv("SYSTEM_RESET_KEY")
-    
+
     if not IS_PRODUCTION and not expected_key:
-        expected_key = "dev_reset_123" # Default for dev if not set
-        
+        expected_key = "dev_reset_123"
+
     if not expected_key or reset_key != expected_key:
-         raise auth.HTTPException(status_code=403, detail="Invalid or missing System Reset Key.")
+        raise auth.HTTPException(status_code=403, detail="Invalid or missing System Reset Key.")
 
     from sqlalchemy import text
-    # Wiping all compliance data
     await db.execute(text("DELETE FROM remarks"))
     await db.execute(text("DELETE FROM deadlines"))
+    await db.execute(text("DELETE FROM remediation"))
+    await db.execute(text("DELETE FROM schedules"))
     await db.execute(text("DELETE FROM submissions"))
-    # Wiping all users EXCEPT the currently logged in admin
-    await db.execute(text(f"DELETE FROM users WHERE id != {current_user.id}"))
-    
+    # CRIT-01 FIX: Parameterized query — no SQL injection
+    await db.execute(text("DELETE FROM users WHERE id != :uid"), {"uid": current_user.id})
+
     await db.commit()
-    return {"message": "System Reset Successful - All compliance data and other accounts wiped."}
+    logger.warning(f"FACTORY RESET executed by user: {current_user.username}")
+    return {"message": "System Reset Successful — All compliance data wiped."}
+
 
 @app.get("/")
 async def root():
-    return {"message": "NABH Compliance Engine API v3.0 — Refactored & Secured"}
+    return {"message": "NABH Compliance Engine API v4.0 — Secured & Refactored"}
 
-# ── Global exception handler ──
+
+# ── Global Exception Handler ──
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(f"UNHANDLED EXCEPTION: {str(exc)}")
-    # Log the full error in development
+    logger.error(f"UNHANDLED EXCEPTION on {request.url}: {str(exc)}")
     if not IS_PRODUCTION:
         import traceback
         traceback.print_exc()
-    
     return JSONResponse(
         status_code=500,
         content={"detail": "An internal server error occurred. Please contact support."}
     )
+
 
 if __name__ == "__main__":
     import uvicorn

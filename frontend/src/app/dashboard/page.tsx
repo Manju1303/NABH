@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ClipboardList, FileCheck, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles, Download, Loader2 } from 'lucide-react';
+import { ClipboardList, FileCheck, MessageSquareText, CalendarClock, ShieldCheck, Zap, Sparkles, Download, Loader2, Users } from 'lucide-react';
 import api, { API_BASE_URL, getMe } from '@/lib/api';
+
+interface UserProfile { id: number; username: string; role: string; hospital_id: number | null; }
 
 const tiles = [
   {
@@ -58,15 +60,24 @@ const tiles = [
 
 export default function HospitalDashboard() {
   const [downloading, setDownloading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [readinessPct, setReadinessPct] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const u = await getMe();
         setUser(u);
+        // MED-12 FIX: Fetch actual readiness score, not hardcoded 78%
+        if (u.hospital_id) {
+          const subRes = await api.get('/api/submissions');
+          const records = subRes.data.records || [];
+          if (records.length > 0) {
+            setReadinessPct(records[0].readiness_percentage ?? null);
+          }
+        }
       } catch (e) {
-        console.error("Failed to fetch user profile", e);
+        console.error('Failed to fetch user profile', e);
       }
     };
     fetchUser();
@@ -158,8 +169,12 @@ export default function HospitalDashboard() {
                 <div className="hidden lg:block p-4 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl">
                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Accreditation Readiness</p>
                     <div className="w-48 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 w-[78%]" style={{ boxShadow: '0 0 10px rgba(0, 242, 255, 0.4)' }}></div>
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-700"
+                          style={{ width: `${readinessPct ?? 0}%`, boxShadow: '0 0 10px rgba(0, 242, 255, 0.4)' }}
+                        />
                     </div>
+                    <p className="text-[9px] text-cyan-400 mt-1 font-bold">{readinessPct !== null ? `${readinessPct}%` : 'No data yet'}</p>
                 </div>
             </div>
          </div>
@@ -181,14 +196,27 @@ export default function HospitalDashboard() {
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 bg-slate-800/50 group-hover:bg-gradient-to-br ${tile.accent}`}
                     style={{ border: `1px solid ${tile.border}` }}
                 >
-                    {React.cloneElement(tile.icon as React.ReactElement<any>, { className: 'w-6 h-6 text-white group-hover:scale-110 transition-transform' })}
+                    {React.cloneElement(tile.icon as React.ReactElement<{ className: string }>, { className: 'w-6 h-6 text-white group-hover:scale-110 transition-transform' })}
                 </div>
-                
                 <h3 className="text-lg font-bold text-white mb-2 group-hover:text-glow-cyan transition-all uppercase tracking-tight">{tile.label}</h3>
                 <p className="text-xs font-medium leading-relaxed text-slate-500 group-hover:text-slate-300 transition-colors">{tile.description}</p>
             </div>
           </Link>
         ))}
+        {/* Admin-only: Staff Management tile */}
+        {user?.role === 'admin' && (
+          <Link href="/dashboard/admin/users"
+            className="group glass-card rounded-[24px] p-6 sm:p-8 transition-all hover:scale-[1.02]">
+            <div className="relative z-10">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 bg-slate-800/50 group-hover:bg-gradient-to-br from-violet-400 to-purple-600"
+                style={{ border: '1px solid rgba(167,139,250,0.4)' }}>
+                <Users className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-glow-cyan transition-all uppercase tracking-tight">Staff Management</h3>
+              <p className="text-xs font-medium leading-relaxed text-slate-500 group-hover:text-slate-300 transition-colors">Create, manage and control access for all staff accounts. Admin only.</p>
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Security Footer */}

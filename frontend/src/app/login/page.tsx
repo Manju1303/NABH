@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Building2, Lock, Mail, ArrowRight, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api';
 
 export default function Login() {
@@ -10,20 +10,27 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [isOnline, setIsOnline] = useState<boolean | null>(null);
 
-  useState(() => {
-    // Ping check
+  // HIGH-09 FIX: useEffect instead of useState for side effect
+  useEffect(() => {
     fetch(`${API_BASE_URL}/`)
       .then(r => setIsOnline(r.ok))
       .catch(() => setIsOnline(false));
-    return;
-  });
+  }, []);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('nabh_token');
+    if (token) router.replace('/dashboard');
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+    setLoading(true);
+
     try {
       const formData = new URLSearchParams();
       formData.append('username', email);
@@ -38,12 +45,18 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('nabh_token', data.access_token);
+        if (data.refresh_token) {
+          localStorage.setItem('nabh_refresh_token', data.refresh_token);
+        }
         router.push('/dashboard');
       } else {
-        setError('Invalid credentials. Please check your email/password.');
+        const err = await response.json().catch(() => ({}));
+        setError(err.detail || 'Invalid credentials. Please check your email/password.');
       }
-    } catch (err) {
-      setError(`Connection failed. Awaiting backend at ${API_BASE_URL}...`);
+    } catch {
+      setError(`Connection failed. Backend unreachable at ${API_BASE_URL}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,14 +69,14 @@ export default function Login() {
           </div>
           <div>
             <h1 className="text-lg font-semibold tracking-wide text-white">NABH</h1>
-            <p className="text-[11px] text-white/80 -mt-0.5">National Accreditation Board for Hospitals & Healthcare Providers</p>
+            <p className="text-[11px] text-white/80 -mt-0.5">National Accreditation Board for Hospitals &amp; Healthcare Providers</p>
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-             <div className={`w-2 h-2 rounded-full ${isOnline === true ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : isOnline === false ? 'bg-rose-500 shadow-[0_0_10px_#f43f5e]' : 'bg-slate-500 animate-pulse'}`}></div>
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                {isOnline === true ? 'Backend Online' : isOnline === false ? 'Backend Offline' : 'Checking Connectivity...'}
-             </span>
+          <div className={`w-2 h-2 rounded-full ${isOnline === true ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : isOnline === false ? 'bg-rose-500 shadow-[0_0_10px_#f43f5e]' : 'bg-slate-500 animate-pulse'}`} />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            {isOnline === true ? 'Backend Online' : isOnline === false ? 'Backend Offline' : 'Checking...'}
+          </span>
         </div>
       </header>
 
@@ -79,17 +92,18 @@ export default function Login() {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded text-sm font-medium flex items-center gap-2" style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)' }}>
+              <div className="mb-4 p-3 rounded text-sm font-medium flex items-center gap-2"
+                style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)' }}>
                 <Lock className="w-4 h-4 shrink-0" /> {error}
               </div>
             )}
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="hg-label">Email Address</label>
+                <label className="hg-label">Username / Email</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#BDBDBD' }} />
-                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                  <input type="text" required value={email} onChange={e => setEmail(e.target.value)}
                     className="hg-input" style={{ paddingLeft: '44px' }} placeholder="admin@nabh.com" />
                 </div>
               </div>
@@ -97,33 +111,27 @@ export default function Login() {
                 <label className="hg-label">Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#64748B' }} />
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    required 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)}
-                    className="hg-input" 
-                    style={{ paddingLeft: '44px', paddingRight: '44px' }} 
-                    placeholder="Enter password" 
+                  <input
+                    type={showPassword ? 'text' : 'password'} required
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    className="hg-input" style={{ paddingLeft: '44px', paddingRight: '44px' }}
+                    placeholder="Enter password"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-              <button type="submit" className="hg-btn-primary w-full py-3 text-base mt-2 flex items-center justify-center gap-2">
-                Sign In <ArrowRight className="w-4 h-4" />
+              <button type="submit" disabled={loading}
+                className="hg-btn-primary w-full py-3 text-base mt-2 flex items-center justify-center gap-2 disabled:opacity-60">
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
-
           </div>
-
           <p className="text-center text-xs mt-4" style={{ color: '#475569' }}>
-            Copyright © 2026 NABH. All rights reserved.
+            Copyright © 2026 NABH HealthGuard AI. All rights reserved.
           </p>
         </div>
       </div>

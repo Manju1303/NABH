@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator, EmailStr
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 
 # ── Auth Schemas ──
@@ -7,30 +7,59 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
 class TokenData(BaseModel):
     username: Optional[str] = None
 
-class User(BaseModel):
-    username: str
-    email: Optional[str] = None
-    disabled: Optional[bool] = None
 
-class UserInDB(User):
-    hashed_password: str
-
+# ── User Management Schemas ──
 class UserCreate(BaseModel):
-    username: str
-    password: str
+    """Admin creates a new staff / committee / hospital_admin account."""
+    username: str = Field(..., min_length=3, max_length=100)
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = Field(None, max_length=255)
+    password: str = Field(..., min_length=8, max_length=128)
+    role: Literal["hospital_admin", "committee", "staff"] = "staff"
     hospital_id: Optional[int] = None
+
 
 class UserOut(BaseModel):
     id: int
     username: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
     role: str
+    is_active: bool
     hospital_id: Optional[int] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    """Admin updates a user's profile / role / hospital assignment."""
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = Field(None, max_length=255)
+    role: Optional[Literal["hospital_admin", "committee", "staff"]] = None
+    is_active: Optional[bool] = None
+    hospital_id: Optional[int] = None
+
+
+class PasswordUpdate(BaseModel):
+    """Admin resets a user's password."""
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class SelfPasswordUpdate(BaseModel):
+    """User changes their own password."""
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
 
 # ── Submission Schemas ──
 class BasicInformation(BaseModel):
@@ -170,7 +199,7 @@ class KeyPersonnel(BaseModel):
 class AccreditationInfo(BaseModel):
     accreditation_type: str = Field(default="Entry Level")
     previously_accredited: bool = Field(default=False)
-    previous_accreditation_date: Optional[str] = Field(default=None)
+    previous_accreditation_date: Optional[datetime] = Field(default=None)
 
 class NurseDetail(BaseModel):
     name: str
@@ -198,14 +227,60 @@ class NABHEntryLevelForm(BaseModel):
     key_personnel: KeyPersonnel
     accreditation_info: AccreditationInfo
 
-class RemarkCreate(BaseModel):
-    author: str = "Hospital Admin"
-    message: str
-    role: str = "Applicant"
-    category: str = "Observation"
 
+# ── Remark Schemas ──
+class RemarkCreate(BaseModel):
+    """FIXED: author/role are no longer client-supplied — they come from the JWT."""
+    message: str = Field(..., min_length=1, max_length=2000, strip_whitespace=True)
+    category: str = Field(default="Observation", max_length=100)
+
+
+# ── Deadline Schemas ──
 class DeadlineCreate(BaseModel):
-    deficiency_id: str
-    deadline: str
-    label: str = ""
-    note: str = ""
+    deficiency_id: str = Field(..., max_length=255)
+    deadline: datetime   # FIXED: was str — now properly typed and validated
+    label: str = Field(default="", max_length=500)
+    note: str = Field(default="", max_length=1000)
+
+
+# ── Remediation Schemas ──
+class RemediationUpdate(BaseModel):
+    """FIXED: was raw dict — now typed with enum for status."""
+    status: Literal["pending", "in_progress", "resolved", "verified"]
+    action_taken: Optional[str] = Field(None, max_length=2000)
+
+
+# ── Schedule Schemas ──
+class ScheduleCreate(BaseModel):
+    submission_id: Optional[int] = None
+    hospital_name: str = Field(..., min_length=2, max_length=255)
+    date: datetime
+    assessment_type: str = Field(..., max_length=100)
+    assessor: str = Field(..., min_length=2, max_length=255)
+    location: Literal["On-Site", "Virtual"] = "On-Site"
+    status: Literal["Scheduled", "Pending", "Completed", "Cancelled"] = "Scheduled"
+    notes: Optional[str] = Field(None, max_length=1000)
+
+class ScheduleUpdate(BaseModel):
+    date: Optional[datetime] = None
+    assessment_type: Optional[str] = Field(None, max_length=100)
+    assessor: Optional[str] = Field(None, max_length=255)
+    location: Optional[Literal["On-Site", "Virtual"]] = None
+    status: Optional[Literal["Scheduled", "Pending", "Completed", "Cancelled"]] = None
+    notes: Optional[str] = Field(None, max_length=1000)
+
+class ScheduleOut(BaseModel):
+    id: int
+    submission_id: Optional[int] = None
+    hospital_name: str
+    date: datetime
+    assessment_type: str
+    assessor: str
+    location: str
+    status: str
+    notes: Optional[str] = None
+    created_at: datetime
+    created_by: str
+
+    class Config:
+        from_attributes = True
