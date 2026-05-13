@@ -39,6 +39,7 @@ class HospitalSubmission(Base):
     deadlines = relationship("RemediationDeadline", back_populates="submission", cascade="all, delete-orphan")
     remediation_steps = relationship("RemediationStep", back_populates="submission", cascade="all, delete-orphan")
     schedules = relationship("AssessmentSchedule", back_populates="submission", cascade="all, delete-orphan")
+    audit_logs = relationship("AuditLog", back_populates="submission", cascade="all, delete-orphan")
 
 
 class Remark(Base):
@@ -129,3 +130,22 @@ class AssessmentSchedule(Base):
     created_by = Column(String(255))
 
     submission = relationship("HospitalSubmission", back_populates="schedules")
+
+
+class AuditLog(Base):
+    """NEW: Tracks every significant action in the system for NABH audit compliance."""
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    username = Column(String(255))
+    action = Column(String(255))      # e.g., "submission.create", "remark.add", "password.reset"
+    resource_type = Column(String(100)) # e.g., "submission", "user", "remark"
+    resource_id = Column(Integer, nullable=True)
+    details = Column(JSON, nullable=True)
+    ip_address = Column(String(45), nullable=True)
+
+    submission_id = Column(Integer, ForeignKey("submissions.id"), nullable=True)
+    submission = relationship("HospitalSubmission", back_populates="audit_logs")
+    user = relationship("User")
