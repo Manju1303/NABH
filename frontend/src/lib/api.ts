@@ -1,22 +1,25 @@
 import axios from 'axios';
 
 // HIGH-10 FIX: Removed hardcoded Render URL fix — use env var correctly
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const custom = localStorage.getItem('nabh_custom_api_url');
+    if (custom && custom.trim()) return custom.trim().replace(/\/$/, '');
+  }
+  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+};
 
-if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_API_URL) {
-  console.warn(
-    '⚠️  NEXT_PUBLIC_API_URL not set. Using default: http://localhost:8000\n' +
-    'For production, set NEXT_PUBLIC_API_URL in your Vercel dashboard.'
-  );
-}
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
 });
 
-// Attach Bearer token to every request
+// Attach Bearer token and dynamic baseURL to every request
 api.interceptors.request.use((config) => {
+  const currentBase = getApiBaseUrl();
+  config.baseURL = currentBase;
   const token = typeof window !== 'undefined' ? localStorage.getItem('nabh_token') : null;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
