@@ -48,13 +48,13 @@ export default function Login() {
         if (data.refresh_token) {
           localStorage.setItem('nabh_refresh_token', data.refresh_token);
         }
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       } else {
         const err = await response.json().catch(() => ({}));
         setError(err.detail || 'Invalid credentials. Please check your email/password.');
       }
-    } catch {
-      setError(`Connection failed. Backend unreachable at ${API_BASE_URL}`);
+    } catch (e: any) {
+      setError(`Connection failed. Backend unreachable at ${API_BASE_URL}. If running locally, please open http://localhost:3000`);
     } finally {
       setLoading(false);
     }
