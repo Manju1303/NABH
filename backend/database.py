@@ -65,8 +65,12 @@ async def init_db():
                 from sqlalchemy import text
                 await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);"))
                 await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(100) DEFAULT 'staff';"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE;"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE;"))
                 await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS hospital_id INTEGER;"))
-                logger.info("[DB MIGRATION] PostgreSQL columns verified successfully.")
+                logger.info("[DB MIGRATION] All PostgreSQL users table columns verified successfully.")
             except Exception as e:
                 logger.warning(f"[DB MIGRATION] Column verification note: {e}")
 
