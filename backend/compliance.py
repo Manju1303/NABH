@@ -268,15 +268,54 @@ def get_nested_value(data: dict, field_path: str):
     return current
 
 
+def get_dynamic_thresholds(form_data: dict) -> list[dict]:
+    """
+    Returns NABH thresholds customized for SHCO 2nd Edition (< 50 beds) vs HCO (>= 50 beds).
+    """
+    op_beds = get_nested_value(form_data, "hospital_details.operational_beds") or 0
+    is_shco = op_beds < 50
+
+    thresholds = []
+    for t in NABH_THRESHOLDS:
+        item = dict(t)
+        if is_shco:
+            if t["id"] == "beds_operational":
+                item["min_value"] = 1
+                item["nabh_reference"] = "SHCO 2nd Ed - AAC.1 (Min Bed Capacity)"
+                item["reason"] = "SHCO 2nd Edition standard requires at least 1 operational bed for small healthcare organizations."
+            elif t["id"] == "icu_beds":
+                item["min_value"] = 1
+                item["condition_field"] = "clinical_services.has_icu"
+                item["nabh_reference"] = "SHCO 2nd Ed - COP.3 (Intensive Care if in scope)"
+            elif t["id"] == "emergency_beds":
+                item["min_value"] = 1
+                item["nabh_reference"] = "SHCO 2nd Ed - COP.1 (Emergency/Casualty)"
+            elif t["id"] == "water_capacity":
+                item["min_value"] = 1000
+                item["nabh_reference"] = "SHCO 2nd Ed - Water Storage Standards"
+            elif t["id"] == "generator_capacity":
+                item["min_value"] = 5
+                item["nabh_reference"] = "SHCO 2nd Ed - Electrical Backup Standards"
+            elif t["id"] == "opd_12_months":
+                item["min_value"] = 300
+                item["nabh_reference"] = "SHCO 2nd Ed - OPD Clinical Volume"
+            elif t["id"] == "admissions_12_months":
+                item["min_value"] = 30
+                item["nabh_reference"] = "SHCO 2nd Ed - Admission Volume Baseline"
+        thresholds.append(item)
+    return thresholds
+
+
 def evaluate_deficiencies(form_data: dict) -> list[dict]:
     """
-    Evaluate all NABH thresholds and mandatory booleans.
+    Evaluate all NABH thresholds and mandatory booleans against SHCO 2nd Edition / HCO standards.
     Returns a list of deficiency items with severity and suggested deadlines.
     """
     deficiencies = []
+    dynamic_thresholds = get_dynamic_thresholds(form_data)
 
     # Check numeric thresholds
-    for threshold in NABH_THRESHOLDS:
+    for threshold in dynamic_thresholds:
         # Check condition field (skip if condition isn't met)
         condition = threshold.get("condition_field")
         if condition:
@@ -343,3 +382,4 @@ def evaluate_deficiencies(form_data: dict) -> list[dict]:
     deficiencies.sort(key=lambda d: severity_order.get(d["severity"], 99))
 
     return deficiencies
+

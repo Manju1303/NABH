@@ -1,10 +1,9 @@
 from schemas import NABHEntryLevelForm
-from compliance import get_nested_value, NABH_THRESHOLDS, MANDATORY_BOOLEANS
+from compliance import get_nested_value, MANDATORY_BOOLEANS, get_dynamic_thresholds
 
 def calculate_nabh_score(form: NABHEntryLevelForm) -> dict:
     """
-    NABH Scoring Engine v4.1
-    Fix HIGH-06: is_ready threshold changed from 100% to 80%
+    NABH Scoring Engine v5.0 — SHCO 2nd Edition (Under 50 Beds) & HCO
     """
     form_data = form.model_dump()
 
@@ -13,17 +12,24 @@ def calculate_nabh_score(form: NABHEntryLevelForm) -> dict:
     cat_scores: dict = {}
     cat_max: dict = {}
 
-    # 1. Assessment Mode Detection (1-5 beds = Virtual, 6+ = Onsite)
     op_beds = get_nested_value(form_data, "hospital_details.operational_beds") or 0
-    assessment_mode = "Virtual Assessment (VA)" if op_beds <= 5 else "Onsite Assessment (OA)"
+    is_shco = op_beds < 50
+    edition = "SHCO 2nd Edition (Under 50 Beds)" if is_shco else "HCO Entry Level (50+ Beds)"
+
+    # 1. Assessment Mode Detection
+    if is_shco:
+        assessment_mode = "SHCO Virtual Assessment (VA - 2nd Ed)" if op_beds <= 5 else "SHCO Onsite Assessment (OA - 2nd Ed)"
+    else:
+        assessment_mode = "HCO Onsite Assessment (OA)"
 
     # 2. Statutory Compliance Blockers
     statutory_items = ["bmw_authorization", "fire_noc", "emergency_24x7", "steam_autoclave"]
     statutory_passed = True
     missing_statutory = []
 
-    # 3. Evaluate numeric thresholds
-    for t in NABH_THRESHOLDS:
+    # 3. Evaluate dynamic numeric thresholds (SHCO 2nd Ed vs HCO)
+    dynamic_thresholds = get_dynamic_thresholds(form_data)
+    for t in dynamic_thresholds:
         cat = t["category"]
         cat_scores.setdefault(cat, 0)
         cat_max.setdefault(cat, 0)
@@ -64,7 +70,7 @@ def calculate_nabh_score(form: NABHEntryLevelForm) -> dict:
     # 5. Normalize
     normalized_total = (raw_score / raw_max_score * 100) if raw_max_score > 0 else 0
 
-    # 6. Grading — HIGH-06 FIX: is_ready at 80%, not 100%
+    # 6. Grading
     if not statutory_passed:
         grade = "Ineligible (Missing Statutory Requirements)"
         status_color = "#EF4444"
@@ -87,12 +93,13 @@ def calculate_nabh_score(form: NABHEntryLevelForm) -> dict:
         "total_score": int(normalized_total),
         "max_score": 100,
         "readiness_percentage": round(normalized_total, 2),
-        # FIXED HIGH-06: was >= 100, now >= 80
         "is_ready": normalized_total >= 80 and statutory_passed,
         "assessment_mode": assessment_mode,
+        "edition": edition,
         "statutory_passed": statutory_passed,
         "missing_statutory": missing_statutory,
         "grade": grade,
         "status_color": status_color,
         "section_scores": section_scores,
     }
+

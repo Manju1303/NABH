@@ -100,10 +100,69 @@ export default function ComplianceForm() {
     return Math.round(((step + 1) / STEPS.length) * 100);
   }, [step]);
 
+  const validateStep = (currentStep: number): string | null => {
+    if (currentStep === 0) {
+      if (!fd.hospitalName || !fd.hospitalName.trim()) return "Hospital Name is mandatory (*). Please fill it in before proceeding.";
+      if (!fd.regNumber || !fd.regNumber.trim()) return "NABH Registration ID is mandatory (*). Please fill it in before proceeding.";
+      if (!fd.email || !fd.email.includes('@')) return "A valid Contact Email Address is mandatory (*).";
+      if (!fd.phone || !/^\d{10}$/.test(fd.phone)) return "Phone number is mandatory (*), must be exactly 10 numeric digits, and cannot contain letters or symbols.";
+    } else if (currentStep === 1) {
+      if (!fd.hospitalType) return "Hospital Type is mandatory (*). Please select an option.";
+      if (!fd.ownershipType) return "Ownership Type is mandatory (*). Please select an option.";
+      if (!fd.builtUpArea || fd.builtUpArea <= 0) return "Built-up Area (sq.mt) is mandatory (*).";
+      if (!fd.buildings || fd.buildings < 1) return "Number of Buildings is mandatory (*).";
+      if (!fd.sanctionedBeds || fd.sanctionedBeds < 1) return "Sanctioned Beds is mandatory (*).";
+      if (!fd.operationalBeds || fd.operationalBeds < 1) return "Operational Beds is mandatory (*).";
+
+      const allocatedBeds = Number(fd.emergencyBeds || 0) + Number(fd.icuBeds || 0) + Number(fd.hduBeds || 0) + Number(fd.privateBeds || 0) + Number(fd.semiPrivateBeds || 0) + Number(fd.generalBeds || 0);
+      if (allocatedBeds !== Number(fd.operationalBeds)) {
+        return `Bed Distribution Tally Mismatch: Total allocated ward beds (${allocatedBeds}) must exactly equal Operational Beds (${fd.operationalBeds}). Currently ${allocatedBeds > Number(fd.operationalBeds) ? `over-allocated by ${allocatedBeds - Number(fd.operationalBeds)} beds` : `${Number(fd.operationalBeds) - allocatedBeds} beds remaining to be allocated`}.`;
+      }
+    } else if (currentStep === 11) {
+      if (!fd.medDirector || fd.medDirector.trim().length < 2) return "Medical Director / Superintendent is mandatory (*).";
+      if (!fd.qualityManager || fd.qualityManager.trim().length < 2) return "NABH / Quality Manager is mandatory (*).";
+      if (!fd.administrator || fd.administrator.trim().length < 2) return "Administrator / CEO is mandatory (*).";
+    }
+    return null;
+  };
+
+  const handleNextStep = () => {
+    const err = validateStep(step);
+    if (err) {
+      setError(err);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setError(null);
+    setStep(s => Math.min(STEPS.length - 1, s + 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep > step) {
+      const err = validateStep(step);
+      if (err) {
+        setError(err);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+    setError(null);
+    setStep(targetStep);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = async () => {
-    // Basic validation check before submit
-    if (fd.phone.length !== 10) return setError("Phone number must be exactly 10 digits.");
-    if (!fd.email.includes('@')) return setError("Please enter a valid email address.");
+    // Validate all steps before submitting
+    for (let i = 0; i < STEPS.length; i++) {
+      const err = validateStep(i);
+      if (err) {
+        setStep(i);
+        setError(err);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
 
     setLoading(true); setError(null);
     try {
@@ -185,9 +244,9 @@ export default function ComplianceForm() {
           blood_transfusion_committee_active: fd.bloodCommittee
         },
         key_personnel: { 
-          medical_director: fd.medDirector || 'TBD', 
-          quality_manager: fd.qualityManager || 'TBD', 
-          administrator: fd.administrator || 'TBD' 
+          medical_director: fd.medDirector, 
+          quality_manager: fd.qualityManager, 
+          administrator: fd.administrator 
         },
         accreditation_info: {
           accreditation_type: fd.accredType, previously_accredited: fd.prevAccred,
@@ -297,7 +356,7 @@ export default function ComplianceForm() {
                 {STEPS.map((s, i) => (
                     <button 
                         key={i} 
-                        onClick={() => setStep(i)} 
+                        onClick={() => handleStepClick(i)} 
                         className={`flex-shrink-0 lg:w-full text-left p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all flex items-center gap-3 sm:gap-4 border ${i === step ? 'bg-cyan-500 border-cyan-500 text-black shadow-lg shadow-cyan-500/20' : i < step ? 'bg-white/5 border-emerald-500/30 text-emerald-500 opacity-60' : 'bg-transparent border-white/5 text-slate-500 hover:bg-white/5'}`}
                     >
                         <div className={`p-1.5 rounded-lg ${i === step ? 'bg-black/10' : 'bg-white/5'}`}>
@@ -398,7 +457,7 @@ export default function ComplianceForm() {
                         
                         {step < STEPS.length - 1 ? (
                             <button 
-                                onClick={() => { setStep(s => Math.min(STEPS.length - 1, s + 1)); window.scrollTo({top:0, behavior:'smooth'}); }} 
+                                onClick={handleNextStep} 
                                 className="flex items-center gap-2 sm:gap-3 px-6 sm:px-12 py-3 sm:py-5 rounded-xl sm:rounded-[24px] bg-white text-black text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/10"
                             >
                                 NEXT STEP <ChevronRight className="w-4 h-4" />
@@ -414,6 +473,7 @@ export default function ComplianceForm() {
                         )}
                     </div>
                  </div>
+
 
                  {/* Security Context */}
                  <div className="p-4 sm:p-8 bg-black/40 border border-white/5 rounded-2xl sm:rounded-[40px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

@@ -3,15 +3,31 @@
 import React from 'react';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
-export const Inp = ({ label, v, set, type = 'text', placeholder = '', error, touched }: any) => (
+const renderLabelWithStar = (label: string) => {
+  if (!label) return null;
+  if (label.includes('*')) {
+    const parts = label.split('*');
+    return (
+      <span className="inline-flex items-center gap-1">
+        <span>{parts[0].trim()}</span>
+        <span className="text-rose-500 font-black text-sm leading-none" title="Mandatory Field">*</span>
+        {parts.slice(1).join('*').trim() && <span>{parts.slice(1).join('*').trim()}</span>}
+      </span>
+    );
+  }
+  return <span>{label}</span>;
+};
+
+export const Inp = ({ label, v, set, type = 'text', placeholder = '', error, touched, maxLength }: any) => (
   <div className="space-y-2">
-    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 block">
-        {label}
+    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 block">
+      {renderLabelWithStar(label)}
     </label>
     <div className="relative group">
         <input 
             type={type} 
             value={v} 
+            maxLength={maxLength}
             onChange={e => set(e.target.value)} 
             placeholder={placeholder} 
             className={`w-full bg-slate-900 border-2 rounded-2xl px-5 py-4 text-sm font-bold transition-all outline-none 
@@ -29,14 +45,63 @@ export const Inp = ({ label, v, set, type = 'text', placeholder = '', error, tou
   </div>
 );
 
-export const Num = ({ label, v, set, error, touched }: any) => (
+export const PhoneInp = ({ label, v, set, error, touched }: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // SECURITY SANITIZATION: Strictly allow ONLY numeric digits (0-9), max 10 digits
+    const sanitized = e.target.value.replace(/\D/g, '').slice(0, 10);
+    set(sanitized);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 block">
+        {renderLabelWithStar(label)}
+      </label>
+      <div className="relative group">
+          <input 
+              type="text" 
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={10}
+              value={v} 
+              onChange={handleChange} 
+              placeholder="e.g. 9876543210 (10 digits)" 
+              className={`w-full bg-slate-900 border-2 rounded-2xl px-5 py-4 text-sm font-bold transition-all outline-none tracking-widest
+                  ${error && touched ? 'border-rose-500 focus:ring-4 focus:ring-rose-500/20' : 'border-white/5 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20'}
+                  ${!error && touched && v && v.length === 10 ? 'border-emerald-500/50' : ''}`}
+              style={touched ? { paddingRight: '48px' } : {}}
+          />
+          {touched && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {error ? <AlertCircle className="w-5 h-5 text-rose-500" /> : v && v.length === 10 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : null}
+              </div>
+          )}
+      </div>
+      {error && touched && <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-2">{error}</p>}
+    </div>
+  );
+};
+
+export const Num = ({ label, v, set, error, touched, min = 0 }: any) => (
   <div className="space-y-2">
-    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 block">{label}</label>
+    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 block">
+      {renderLabelWithStar(label)}
+    </label>
     <div className="relative">
         <input 
             type="number" 
+            min={min}
             value={v} 
-            onChange={e => set(Number(e.target.value))} 
+            onKeyDown={e => {
+              // Block invalid negative signs or scientific notation characters
+              if (['-', 'e', 'E', '+'].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={e => {
+              const val = Math.max(min, Number(e.target.value));
+              set(val);
+            }} 
             className={`w-full bg-slate-900 border-2 rounded-2xl px-5 py-4 text-sm font-bold transition-all outline-none
                 ${error && touched ? 'border-rose-500' : 'border-white/5 focus:border-cyan-500'}`}
         />
@@ -45,9 +110,12 @@ export const Num = ({ label, v, set, error, touched }: any) => (
   </div>
 );
 
+
 export const Sel = ({ label, v, set, opts, labels }: any) => (
   <div className="space-y-2">
-    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 block">{label}</label>
+    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 block">
+      {renderLabelWithStar(label)}
+    </label>
     <select 
         value={v} 
         onChange={e => set(e.target.value)} 
@@ -60,7 +128,9 @@ export const Sel = ({ label, v, set, opts, labels }: any) => (
 
 export const Tog = ({ label, c, set }: any) => (
   <div className="flex items-center justify-between p-6 rounded-3xl bg-slate-900 border border-white/5 transition-all hover:bg-slate-800/50">
-    <span className="text-xs font-black text-slate-300 uppercase tracking-widest">{label}</span>
+    <span className="text-xs font-black text-slate-300 uppercase tracking-widest">
+      {renderLabelWithStar(label)}
+    </span>
     <div 
         onClick={() => set(!c)} 
         className={`relative w-14 h-7 rounded-full cursor-pointer transition-all duration-300 ${c ? 'bg-cyan-500 shadow-[0_0_15px_rgba(0,242,255,0.3)]' : 'bg-slate-800'}`}
@@ -69,3 +139,4 @@ export const Tog = ({ label, c, set }: any) => (
     </div>
   </div>
 );
+

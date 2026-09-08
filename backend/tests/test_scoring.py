@@ -1,4 +1,3 @@
-import pytest
 from schemas import NABHEntryLevelForm, BasicInformation, HospitalDetails, OPDIPDData, ClinicalServicesScope, HospitalStaffing, OTSterilization, Utilities, InfectionControlBMW, HRTraining, PatientProcesses, LabImagingBloodBank, KeyPersonnel, AccreditationInfo
 from scoring import calculate_nabh_score
 
@@ -37,20 +36,20 @@ def test_full_compliance_score():
     data = get_minimal_form_data()
     # Setting all critical/mandatory fields to pass
     # Thresholds
-    data["hospital_details"]["operational_beds"] = 15 # min 10
-    data["hospital_details"]["icu_beds"] = 5 # min 2
-    data["hospital_details"]["casualty_emergency_beds"] = 5 # min 2
+    data["hospital_details"]["operational_beds"] = 15 # min 1 for SHCO
+    data["hospital_details"]["icu_beds"] = 5 # min 1
+    data["hospital_details"]["casualty_emergency_beds"] = 5 # min 1
     data["ot_sterilization"]["number_of_ots"] = 2 # min 1
-    data["opd_ipd"]["opd_patients_12_months"] = 2000 # min 1000
-    data["opd_ipd"]["admissions_12_months"] = 200 # min 100
+    data["opd_ipd"]["opd_patients_12_months"] = 2000 # min 300
+    data["opd_ipd"]["admissions_12_months"] = 200 # min 30
     
-    # Utilities (optional if not present)
+    # Utilities
     data["utilities"]["ups_present"] = True
     data["utilities"]["ups_capacity_kv"] = 10 # min 5
     data["utilities"]["generator_present"] = True
-    data["utilities"]["generator_capacity_kv"] = 20 # min 15
+    data["utilities"]["generator_capacity_kv"] = 20 # min 5
     data["utilities"]["total_water_tanks"] = 3 # min 2
-    data["utilities"]["total_water_capacity_litres"] = 10 # min 5
+    data["utilities"]["total_water_capacity_litres"] = 5000 # min 1000
     data["utilities"]["elevators_for_trolleys"] = 2 # min 1
     
     # Booleans
@@ -73,16 +72,24 @@ def test_full_compliance_score():
     assert result["total_score"] == 100
     assert result["is_ready"] is True
     assert "assessment_mode" in result
+    assert result["edition"] == "SHCO 2nd Edition (Under 50 Beds)"
     assert result["statutory_passed"] is True
+
+def test_shco_2nd_edition_under_50_beds():
+    data = get_minimal_form_data()
+    data["hospital_details"]["operational_beds"] = 4
+    form = NABHEntryLevelForm(**data)
+    result = calculate_nabh_score(form)
+    assert result["edition"] == "SHCO 2nd Edition (Under 50 Beds)"
+    assert result["assessment_mode"] == "SHCO Virtual Assessment (VA - 2nd Ed)"
 
 def test_zero_compliance_score():
     data = get_minimal_form_data()
-    # All mandatory fields will be 0 or False by default except what we set in minimal data
-    # Let's ensure they are fail
-    data["hospital_details"]["operational_beds"] = 5 # min 10
+    data["hospital_details"]["operational_beds"] = 1
     
     form = NABHEntryLevelForm(**data)
     result = calculate_nabh_score(form)
     
     assert result["total_score"] < 100
     assert result["is_ready"] is False
+
