@@ -60,20 +60,34 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+        if DATABASE_URL:
+            try:
+                from sqlalchemy import text
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS hospital_id INTEGER;"))
+                logger.info("[DB MIGRATION] PostgreSQL columns verified successfully.")
+            except Exception as e:
+                logger.warning(f"[DB MIGRATION] Column verification note: {e}")
+
     # Seed default admin if no user exists in DB
-    async with AsyncSessionLocal() as session:
-        from sqlalchemy import select
-        import models, auth
-        user_result = await session.execute(select(models.User))
-        if not user_result.scalars().first():
-            initial_password = os.getenv("INITIAL_ADMIN_PASSWORD", "admin123")
-            admin_user = models.User(
-                username="admin@nabh.com",
-                email="admin@nabh.com",
-                hashed_password=auth.get_password_hash(initial_password),
-                role="admin", 
-                is_active=True,
-            )
-            session.add(admin_user)
-            await session.commit()
-            logger.info(f"[DB] Initial admin created with username 'admin@nabh.com'.")
+    try:
+        async with AsyncSessionLocal() as session:
+            from sqlalchemy import select
+            import models, auth
+            user_result = await session.execute(select(models.User))
+            if not user_result.scalars().first():
+                initial_password = os.getenv("INITIAL_ADMIN_PASSWORD", "admin123")
+                admin_user = models.User(
+                    username="admin@nabh.com",
+                    email="admin@nabh.com",
+                    hashed_password=auth.get_password_hash(initial_password),
+                    role="admin", 
+                    is_active=True,
+                )
+                session.add(admin_user)
+                await session.commit()
+                logger.info("[DB] Initial admin created with username 'admin@nabh.com'.")
+    except Exception as err:
+        logger.error(f"[DB SEEDING WARNING] Could not seed initial user: {err}")
+
