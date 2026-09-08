@@ -60,25 +60,20 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # MED-08 FIX: Only seed when explicitly set — no auto-seeding in dev
-    if os.getenv("SEED_DB", "false").lower() == "true":
-        async with AsyncSessionLocal() as session:
-            from sqlalchemy import select
-            import models, auth
-            user_result = await session.execute(select(models.User))
-            if not user_result.scalars().first():
-                # CRIT-02 FIX: Password from env var, never hardcoded
-                initial_password = os.getenv("INITIAL_ADMIN_PASSWORD")
-                if not initial_password:
-                    if IS_PRODUCTION:
-                        raise RuntimeError("INITIAL_ADMIN_PASSWORD must be set in production!")
-                    initial_password = "ChangeMe@2026!"
-                    logger.warning("[DB] Using default dev admin password — change it!")
-                admin_user = models.User(
-                    username="admin@nabh.com",
-                    hashed_password=auth.get_password_hash(initial_password),
-                    role="admin", is_active=True,
-                )
-                session.add(admin_user)
-                await session.commit()
-                logger.info("[DB] Initial admin created. CHANGE THE PASSWORD IMMEDIATELY.")
+    # Seed default admin if no user exists in DB
+    async with AsyncSessionLocal() as session:
+        from sqlalchemy import select
+        import models, auth
+        user_result = await session.execute(select(models.User))
+        if not user_result.scalars().first():
+            initial_password = os.getenv("INITIAL_ADMIN_PASSWORD", "admin123")
+            admin_user = models.User(
+                username="admin@nabh.com",
+                email="admin@nabh.com",
+                hashed_password=auth.get_password_hash(initial_password),
+                role="admin", 
+                is_active=True,
+            )
+            session.add(admin_user)
+            await session.commit()
+            logger.info(f"[DB] Initial admin created with username 'admin@nabh.com'.")
